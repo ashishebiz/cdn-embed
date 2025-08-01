@@ -1,17 +1,19 @@
-name: Build CDN Script
+name: Build and Commit CDN Script
 
 on:
   push:
     branches:
-      - main # or change to the branch you use
+      - main # or your deployment branch
 
 jobs:
-  build:
+  build-and-commit:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -21,11 +23,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build with esbuild
+      - name: Build the CDN script
         run: node esbuild.config.js
 
-      - name: Upload dist (optional)
-        uses: actions/upload-artifact@v4
-        with:
-          name: cdn-dist
-          path: dist/
+      - name: Commit and push changes to dist/
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add dist
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: update dist folder [auto]"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref }}
