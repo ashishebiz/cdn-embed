@@ -1,0 +1,14 @@
+{
+  "name": "cdn-embed-bit",
+  "version": "1.0.0",
+  "description": "new version of cdn script",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --minify --format=iife --outfile=dist/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "esbuild": "^0.25.8"
+  }
+}
