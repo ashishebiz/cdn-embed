@@ -84,7 +84,7 @@ export function startPolling() {
 
 (async function main() {
   try {
-    console.log("CDN script loaded");
+    console.log("CDN script loaded 007");
     const response = await fetchData();
     console.log("Initial API response:", response);
 
