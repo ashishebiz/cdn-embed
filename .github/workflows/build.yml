@@ -1,0 +1,31 @@
+name: Build CDN Script
+
+on:
+  push:
+    branches:
+      - main # or change to the branch you use
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build with esbuild
+        run: node esbuild.config.js
+
+      - name: Upload dist (optional)
+        uses: actions/upload-artifact@v4
+        with:
+          name: cdn-dist
+          path: dist/
