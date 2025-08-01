@@ -16,7 +16,7 @@
           reject(e);
         }
       };
-      var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+      var step = (x) => (x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected));
       step((generator = generator.apply(__this, __arguments)).next());
     });
   };
@@ -29,19 +29,23 @@
     });
   }
   function startPolling() {
-    setInterval(() => __async(null, null, function* () {
-      try {
-        const data = yield fetchData();
-        console.log("Polled data:", data);
-      } catch (err) {
-        console.log("Polling error:", err);
-      }
-    }), 5e3);
+    setInterval(
+      () =>
+        __async(null, null, function* () {
+          try {
+            const data = yield fetchData();
+            console.log("Polled data:", data);
+          } catch (err) {
+            console.log("Polling error:", err);
+          }
+        }),
+      5e3,
+    );
   }
   (function main() {
     return __async(this, null, function* () {
       try {
-        console.log("CDN script loaded");
+        console.log("CDN script loaded 007");
         const response = yield fetchData();
         console.log("Initial API response:", response);
         startPolling();
