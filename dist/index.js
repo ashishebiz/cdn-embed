@@ -1,26 +1,53 @@
+"use strict";
 (() => {
-  async function t() {
-    return await (
-      await fetch("https://jsonplaceholder.typicode.com/posts")
-    ).json();
+  var __async = (__this, __arguments, generator) => {
+    return new Promise((resolve, reject) => {
+      var fulfilled = (value) => {
+        try {
+          step(generator.next(value));
+        } catch (e) {
+          reject(e);
+        }
+      };
+      var rejected = (value) => {
+        try {
+          step(generator.throw(value));
+        } catch (e) {
+          reject(e);
+        }
+      };
+      var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
+      step((generator = generator.apply(__this, __arguments)).next());
+    });
+  };
+
+  // src/index.ts
+  function fetchData() {
+    return __async(this, null, function* () {
+      const response = yield fetch("https://jsonplaceholder.typicode.com/posts");
+      return yield response.json();
+    });
   }
-  function n() {
-    setInterval(async () => {
+  function startPolling() {
+    setInterval(() => __async(null, null, function* () {
       try {
-        let o = await t();
-        console.log("Polled data:", o);
-      } catch (o) {
-        console.log("Polling error:", o);
+        const data = yield fetchData();
+        console.log("Polled data:", data);
+      } catch (err) {
+        console.log("Polling error:", err);
       }
-    }, 1e4);
+    }), 5e3);
   }
-  (async function () {
-    try {
-      console.log("CDN script loaded");
-      let r = await t();
-      console.log("Initial API response:", r), n();
-    } catch (r) {
-      console.log("Error initializing script", r);
-    }
+  (function main() {
+    return __async(this, null, function* () {
+      try {
+        console.log("CDN script loaded");
+        const response = yield fetchData();
+        console.log("Initial API response:", response);
+        startPolling();
+      } catch (error) {
+        console.log("Error initializing script", error);
+      }
+    });
   })();
 })();
