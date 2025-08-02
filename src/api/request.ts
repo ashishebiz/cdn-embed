@@ -1,14 +1,17 @@
-export const request = async (url: string, method: "GET" | "POST" = "GET", body: any = null, headers: Record<string, string> = {}) => {
-  const config: RequestInit = {
-    method,
+export async function getRequest(url: string, headers: Record<string, string> = {}) {
+  const res = await fetch(url, { method: "GET", headers });
+  return res.json();
+}
+
+export async function postRequest(url: string, body: Record<string, unknown>, headers: Record<string, string> = {}) {
+  const res = await fetch(url, {
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
       ...headers,
     },
-  };
-  if (method === "POST" && body) config.body = JSON.stringify(body);
-
-  const response = await fetch(url, config);
-  if (!response.ok) throw new Error(`HTTP error ${response.status}`);
-  return await response.json();
-};
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+  return res.json();
+}

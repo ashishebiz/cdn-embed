@@ -1,7 +1,7 @@
 import { build } from "esbuild";
 
 const sharedConfig = {
-  entryPoints: ["./src/index.ts"],
+  entryPoints: ["./src/main.ts"],
   bundle: true,
   format: "iife",
   target: ["es6"],
