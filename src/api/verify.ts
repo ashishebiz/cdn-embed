@@ -98,7 +98,7 @@ export class IdentityVerifier {
       this.displayQRCode(data.qrCodeUrl, data.deepLink);
       this.startPolling(data.sessionId);
     } catch (err) {
-      console.error("Failed to generate QR code:", err);
+      errorLog("Failed to generate QR code:", err);
     }
   }
 }

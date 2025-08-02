@@ -2,6 +2,7 @@ import { DEFAULT_HEADERS } from "../constants";
 
 export async function getRequest(url: string, headers: Record<string, string> = {}) {
   const res = await fetch(url, { method: "GET", headers });
+  if (!res.ok) throw new Error(`HTTP error ${res.status}`);
   return res.json();
 }
 

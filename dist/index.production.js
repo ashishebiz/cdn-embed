@@ -43,6 +43,7 @@ var IdentityVerificationCDN = (() => {
   function getRequest(_0) {
     return __async(this, arguments, function* (url, headers = {}) {
       const res = yield fetch(url, { method: "GET", headers });
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
       return res.json();
     });
   }
@@ -223,7 +224,7 @@ var IdentityVerificationCDN = (() => {
           this.displayQRCode(data.qrCodeUrl, data.deepLink);
           this.startPolling(data.sessionId);
         } catch (err) {
-          console.error("Failed to generate QR code:", err);
+          errorLog("Failed to generate QR code:", err);
         }
       });
     }
