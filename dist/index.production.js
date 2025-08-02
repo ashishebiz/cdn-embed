@@ -158,6 +158,7 @@ var IdentityVerificationCDN = (() => {
     }
     startPolling(sessionId) {
       this.pollingId && clearInterval(this.pollingId);
+      if (!sessionId) throw new Error("Session ID not found");
       this.pollingId = window.setInterval(() => __async(this, null, function* () {
         try {
           const url = `${BASE_API_URL}${POLLING_ENDPOINT}/${sessionId}`;
