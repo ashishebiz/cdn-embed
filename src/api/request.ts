@@ -1,3 +1,5 @@
+import { DEFAULT_HEADERS } from "../constants";
+
 export async function getRequest(url: string, headers: Record<string, string> = {}) {
   const res = await fetch(url, { method: "GET", headers });
   return res.json();
@@ -7,7 +9,7 @@ export async function postRequest(url: string, body: Record<string, unknown>, he
   const res = await fetch(url, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+      ...DEFAULT_HEADERS,
       ...headers,
     },
     body: JSON.stringify(body),

@@ -1,12 +1,16 @@
-export const BASE_API_URL = "https://develop-api.chainit.online";
-export const AGE_APP_ENDPOINTS = "/users/v1/age-verification";
+// export const BASE_API_URL = "https://develop-api.chainit.online";
+// export const QR_GENERATION_ENDPOINT = "/rule-engine/v1/age-app-embedded/generate-qr/";
 
-export const API_KEY_HEADER_NAME = "x-api-key";
+export const BASE_API_URL = "http://localhost:8888";
+export const QR_GENERATION_ENDPOINT = "/rule-engine/v1/age-app-embedded/generate-qr";
+export const POLLING_ENDPOINT = "/rule-engine/v1/age-app-embedded/get-qr";
+
+export const SIGN_KEY_HEADER = "x-sign-key";
 export const DEFAULT_HEADERS = {
   "Content-Type": "application/json",
 };
 
-export const POLLING_INTERVAL = 10000;
+export const POLLING_INTERVAL = 5000;
 export const REDIRECT_DELAY = 10000;
 
 export const STATES = {
@@ -16,4 +20,5 @@ export const STATES = {
   Approved: "Approved",
   RejectedByUser: "RejectedByUser",
   RejectedByRequirement: "RejectedByRequirement",
+  SomethingWentWrong: "SomethingWentWrong",
 } as const;

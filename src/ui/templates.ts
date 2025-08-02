@@ -7,7 +7,8 @@ export const getMessageHTML = (state: VerificationState): string => {
     Approved: `<div class='checkmark'></div><div class='message'>Access granted in 10s.</div>`,
     RejectedByUser: `<div class='cross'></div><div class='message denied'>Access Denied</div>`,
     RejectedByRequirement: `<div class='cross'></div><div class='message denied'>Access Denied</div>`,
-    WaitingForScan: "",
+    WaitingForScan: "<div class='spinner'></div><div class='message'>Waiting for scan...</div>",
+    SomethingWentWrong: `<div class='cross'></div><div class='message denied'>Something went wrong</div>`,
   };
   return messages[state];
 };

@@ -5,8 +5,12 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "nodemon --watch src --ext ts --exec node esbuild.config.js",
-    "build": "node esbuild.config.js"
+    "dev": "nodemon --watch src --ext ts --exec NODE_ENV=local node esbuild.config.js",
+    "build:local": "NODE_ENV=local node esbuild.config.js",
+    "build:dev": "NODE_ENV=development node esbuild.config.js",
+    "build:staging": "NODE_ENV=staging node esbuild.config.js",
+    "build:prod": "NODE_ENV=production node esbuild.config.js",
+    "build:all": "npm run build:local && npm run build:dev && npm run build:staging && npm run build:prod"
   },
   "author": "",
   "license": "ISC",

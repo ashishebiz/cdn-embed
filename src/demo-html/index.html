@@ -7,12 +7,22 @@
   </head>
   <body>
     <h1>CDN Embed Script</h1>
-    <div id="bit-embed-qr"></div>
-    <div id="bit-age-verification-qr"></div>
-    <script src="https://cdn.jsdelivr.net/gh/ashishebiz/cdn-embed/dist/index.js?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvcmdJZCI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMCIsIm1ldGFkYXRhIjpudWxsLCJlbWJlZElkIjoiYzk0ZWM3MmYtODVmYy00NDllLWEzMzYtYzQzMGMxMjhiYzNiIiwidG9rZW5JZCI6ImYzOGZmNDJhLWFiYzctNGMwMC04ODdiLTAxZWJiNWYzNzAzZSIsInNpZ25LZXkiOiJlbWJlZDpmNGE4M2Q5OC1kMjAwLTRjYTQtYjY4Ny1hYTY2MzdhODMxYmEiLCJpYXQiOjE3NTQxMTYxNjR9.2_cVBmp8Fiug6inu3N7QGIj0nkntPi44D55Nrb9-RUM""></script>
+    <div id="embed-qr-code" style="width: 300px; height: 300px"></div>
+    <div id="embed-qr-code-logs" style="width: 300px; height: 300px"></div>
+    <!-- <script src="https://cdn.jsdelivr.net/gh/ashishebiz/cdn-embed/dist/index.js?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvcmdJZCI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMCIsIm1ldGFkYXRhIjpudWxsLCJlbWJlZElkIjoiYzk0ZWM3MmYtODVmYy00NDllLWEzMzYtYzQzMGMxMjhiYzNiIiwidG9rZW5JZCI6ImYzOGZmNDJhLWFiYzctNGMwMC04ODdiLTAxZWJiNWYzNzAzZSIsInNpZ25LZXkiOiJlbWJlZDpmNGE4M2Q5OC1kMjAwLTRjYTQtYjY4Ny1hYTY2MzdhODMxYmEiLCJpYXQiOjE3NTQxMTYxNjR9.2_cVBmp8Fiug6inu3N7QGIj0nkntPi44D55Nrb9-RUM""></script> -->
 
-<!--      
-    <script src="http://127.0.0.1:8080/index.js?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvcmdJZCI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMCIsIm1ldGFkYXRhIjpudWxsLCJlbWJlZElkIjoiYzk0ZWM3MmYtODVmYy00NDllLWEzMzYtYzQzMGMxMjhiYzNiIiwidG9rZW5JZCI6ImYzOGZmNDJhLWFiYzctNGMwMC04ODdiLTAxZWJiNWYzNzAzZSIsInNpZ25LZXkiOiJlbWJlZDpmNGE4M2Q5OC1kMjAwLTRjYTQtYjY4Ny1hYTY2MzdhODMxYmEiLCJpYXQiOjE3NTQxMTYxNjR9.2_cVBmp8Fiug6inu3N7QGIj0nkntPi44D55Nrb9-RUM"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/gh/ashishebiz/cdn-embed/dist/main.js?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+    eyJvcmdJZCI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMCIsIm1ldGFkYXRhIjpudWxsLCJlbWJlZElkIjoiYzk0ZWM3MmYtODVmYy00NDllLWEzMzYtYzQzMGMxMjhiYzNiIiwidG9rZW5JZCI6ImYzOGZmNDJhLWFiYzctNGMwMC04ODdiLTAxZWJiNWYzNzAzZSIsInNpZ25LZXkiOiJlbWJlZDpmNGE4M2Q5OC1kMjAwLTRjYTQtYjY4Ny1hYTY2MzdhODMxYmEiLCJpYXQiOjE3NTQxMTYxNjR9.2_cVBmp8Fiug6inu3N7QGIj0nkntPi44D55Nrb9-RUM"></script> -->
+
+    <!-- <script src="/temp/old.js?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvcmdJZCI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMCIsIm1ldGFkYXRhIjpudWxsLCJlbWJlZElkIjoiYzk0ZWM3MmYtODVmYy00NDllLWEzMzYtYzQzMGMxMjhiYzNiIiwidG9rZW5JZCI6ImYzOGZmNDJhLWFiYzctNGMwMC04ODdiLTAxZWJiNWYzNzAzZSIsInNpZ25LZXkiOiJlbWJlZDpmNGE4M2Q5OC1kMjAwLTRjYTQtYjY4Ny1hYTY2MzdhODMxYmEiLCJpYXQiOjE3NTQxMTYxNjR9.2_cVBmp8Fiug6inu3N7QGIj0nkntPi44D55Nrb9-RUM"></script> -->
+
+    <script
+      src="/dist/index.js"
+      data-api-key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvcmdJZCI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMCIsIm1ldGFkYXRhIjpudWxsLCJlbWJlZElkIjoiYzk0ZWM3MmYtODVmYy00NDllLWEzMzYtYzQzMGMxMjhiYzNiIiwidG9rZW5JZCI6ImYzOGZmNDJhLWFiYzctNGMwMC04ODdiLTAxZWJiNWYzNzAzZSIsInNpZ25LZXkiOiJlbWJlZDpmNGE4M2Q5OC1kMjAwLTRjYTQtYjY4Ny1hYTY2MzdhODMxYmEiLCJpYXQiOjE3NTQxMTYxNjR9.2_cVBmp8Fiug6inu3N7QGIj0nkntPi44D55Nrb9-RUM"
+      data-success-url="https://develop-admin-react.chainit.online/"
+      data-failure-url="https://develop-admin-react.chainit.online/"
+      data-notification-url="https://develop-admin-react.chainit.online/"
+    ></script>
 
     <!-- <script src="https://cdn.jsdelivr.net/gh/sanketebiz/chainit-qr-embed/develop/develop.min.js?apiKey=5c2cd901-146c-4cf4-8aa9-33f59a660a13&successURL=https%3A%2F%2Fdevelop-admin-react.chainit.online&failureURL=https%3A%2F%2Fdevelop-admin-react.chainit.online&notificationURL=https%3A%2F%2Fdevelop-admin-react.chainit.online"></script> -->
   </body>

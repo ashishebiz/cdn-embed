@@ -14,6 +14,7 @@ export interface VerificationOptions {
   qrContainerSelector: string;
   logContainerSelector?: string;
   apiBaseUrl?: string;
+  onVerificationWaitingForScan: () => void;
   onVerificationSuccess: () => void;
   onVerificationFailure: () => void;
   onVerificationScanning: () => void;

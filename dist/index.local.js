@@ -1,21 +1,5 @@
 "use strict";
-(() => {
-  var __defProp = Object.defineProperty;
-  var __getOwnPropSymbols = Object.getOwnPropertySymbols;
-  var __hasOwnProp = Object.prototype.hasOwnProperty;
-  var __propIsEnum = Object.prototype.propertyIsEnumerable;
-  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-  var __spreadValues = (a, b) => {
-    for (var prop in b || (b = {}))
-      if (__hasOwnProp.call(b, prop))
-        __defNormalProp(a, prop, b[prop]);
-    if (__getOwnPropSymbols)
-      for (var prop of __getOwnPropSymbols(b)) {
-        if (__propIsEnum.call(b, prop))
-          __defNormalProp(a, prop, b[prop]);
-      }
-    return a;
-  };
+var AgeVerificationCDN = (() => {
   var __async = (__this, __arguments, generator) => {
     return new Promise((resolve, reject) => {
       var fulfilled = (value) => {
@@ -37,31 +21,11 @@
     });
   };
 
-  // src/api/request.ts
-  function getRequest(_0) {
-    return __async(this, arguments, function* (url, headers = {}) {
-      const res = yield fetch(url, { method: "GET", headers });
-      return res.json();
-    });
-  }
-  function postRequest(_0, _1) {
-    return __async(this, arguments, function* (url, body, headers = {}) {
-      const res = yield fetch(url, {
-        method: "POST",
-        headers: __spreadValues({
-          "Content-Type": "application/json"
-        }, headers),
-        body: JSON.stringify(body)
-      });
-      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-      return res.json();
-    });
-  }
-
   // src/constants/index.ts
-  var BASE_API_URL = "https://develop-api.chainit.online";
-  var AGE_APP_ENDPOINTS = "/users/v1/age-verification";
-  var POLLING_INTERVAL = 1e4;
+  var BASE_API_URL = "http://localhost:8888";
+  var QR_GENERATION_ENDPOINT = "/rule-engine/v1/age-app-embedded/generate-qr";
+  var POLLING_ENDPOINT = "/rule-engine/v1/age-app-embedded/get-qr";
+  var POLLING_INTERVAL = 5e3;
   var REDIRECT_DELAY = 1e4;
   var STATES = {
     WaitingForScan: "WaitingForScan",
@@ -69,19 +33,30 @@
     Scanned: "Scanned",
     Approved: "Approved",
     RejectedByUser: "RejectedByUser",
-    RejectedByRequirement: "RejectedByRequirement"
+    RejectedByRequirement: "RejectedByRequirement",
+    SomethingWentWrong: "SomethingWentWrong"
   };
+
+  // src/api/request.ts
+  function getRequest(_0) {
+    return __async(this, arguments, function* (url, headers = {}) {
+      const res = yield fetch(url, { method: "GET", headers });
+      return res.json();
+    });
+  }
 
   // src/helpers/dom.helper.ts
   var getElement = (selector) => document.querySelector(selector);
-
-  // src/helpers/log.helper.ts
   function logData(container, data) {
     if (!container) return;
     const logEntry = document.createElement("div");
     logEntry.innerText = JSON.stringify(data, null, 2);
     container.prepend(logEntry);
   }
+
+  // src/helpers/log.helper.ts
+  var infoLog = (...args) => console.log("[cdn-embed]", ...args);
+  var errorLog = (...args) => console.error("[cdn-embed]", ...args);
 
   // src/helpers/utils.ts
   var redirectWithDelay = (url, delay) => {
@@ -91,15 +66,11 @@
   };
   var extractQueryParams = () => {
     const script = document.currentScript;
-    console.log("\u{1F680} ~ script 001", script);
-    const src = (script == null ? void 0 : script.src) || "";
-    console.log(new URL(src));
-    const params = new URL(src).searchParams;
     return {
-      apiKey: params.get("apiKey") || "",
-      successURL: params.get("successURL") || "",
-      failureURL: params.get("failureURL") || "",
-      notificationURL: params.get("notificationURL") || ""
+      apiKey: (script == null ? void 0 : script.dataset.apiKey) || "",
+      successURL: (script == null ? void 0 : script.dataset.successUrl) || "",
+      failureURL: (script == null ? void 0 : script.dataset.failureUrl) || "",
+      notificationURL: (script == null ? void 0 : script.dataset.notificationUrl) || ""
     };
   };
 
@@ -114,27 +85,33 @@
     displayQRCode(qrCodeUrl, deepLink) {
       var _a;
       const container = getElement(this.options.qrContainerSelector);
-      if (!container) return;
+      if (!container) {
+        errorLog("QR Container not found");
+        return;
+      }
       container.innerHTML = `<div id="qr-code" class="w-100 h-100" style="cursor:pointer;text-align:center;">
       <img src="${qrCodeUrl}" alt="QR Code" style="width:100%;height:100%;" /></div>`;
       (_a = document.getElementById("qr-code")) == null ? void 0 : _a.addEventListener("click", () => window.open(deepLink, "_blank"));
     }
-    startPolling(statusUrl) {
+    startPolling(sessionId) {
       this.pollingId && clearInterval(this.pollingId);
       this.pollingId = window.setInterval(() => __async(this, null, function* () {
         try {
-          const data = yield getRequest(statusUrl, { "x-api-key": this.options.apiKey });
-          logData(getElement(this.options.logContainerSelector || ""), data);
+          const url = `${BASE_API_URL}${POLLING_ENDPOINT}/${sessionId}`;
+          const data = yield getRequest(url, { "x-sign-key": this.options.apiKey });
+          logData(getElement(this.options.logContainerSelector || ""), data.scanningState);
           if (data == null ? void 0 : data.scanningState) this.handleState(data.scanningState);
         } catch (err) {
-          console.error("Polling error", err);
-          this.handleState("Timeout");
+          errorLog("Polling error", err);
+          this.handleState(STATES.Timeout);
         }
       }), POLLING_INTERVAL);
     }
     handleState(state) {
       const cb = this.options;
       switch (state) {
+        case STATES.WaitingForScan:
+          return cb.onVerificationWaitingForScan();
         case STATES.Scanned:
           return cb.onVerificationScanning();
         case STATES.Approved:
@@ -151,11 +128,12 @@
     }
     generateQRCode() {
       return __async(this, null, function* () {
+        const eventId = "/e42cb048-4a64-4826-af03-5e7eb3a9fa9c";
         try {
-          const url = `${this.options.apiBaseUrl || BASE_API_URL}${AGE_APP_ENDPOINTS}`;
-          const data = yield postRequest(url, {}, { "x-api-key": this.options.apiKey });
+          const url = `${BASE_API_URL}${QR_GENERATION_ENDPOINT}/${eventId}`;
+          const data = yield getRequest(url, { "x-sign-key": this.options.apiKey });
           this.displayQRCode(data.qrCodeUrl, data.deepLink);
-          this.startPolling(data.qrCodeStatusCheckUrl);
+          this.startPolling(data.sessionId);
         } catch (err) {
           console.error("Failed to generate QR code:", err);
         }
@@ -171,7 +149,8 @@
       Approved: `<div class='checkmark'></div><div class='message'>Access granted in 10s.</div>`,
       RejectedByUser: `<div class='cross'></div><div class='message denied'>Access Denied</div>`,
       RejectedByRequirement: `<div class='cross'></div><div class='message denied'>Access Denied</div>`,
-      WaitingForScan: ""
+      WaitingForScan: "<div class='spinner'></div><div class='message'>Waiting for scan...</div>",
+      SomethingWentWrong: `<div class='cross'></div><div class='message denied'>Something went wrong</div>`
     };
     return messages[state];
   };
@@ -203,6 +182,9 @@
       if ((state === STATES.RejectedByUser || state === STATES.RejectedByRequirement) && failURL) {
         redirectWithDelay(failURL, REDIRECT_DELAY);
       }
+      if (state === STATES.SomethingWentWrong && failURL) {
+        redirectWithDelay(failURL, REDIRECT_DELAY);
+      }
     }
     return {
       setOptions,
@@ -213,14 +195,15 @@
 
   // src/main.ts
   (() => {
-    const { apiKey, successURL, failureURL } = extractQueryParams();
-    console.log("\u{1F680} ~ apiKey, successURL, failureURL 001", apiKey, successURL, failureURL);
+    const { apiKey, successURL, failureURL, notificationURL } = extractQueryParams();
+    infoLog({ apiKey, successURL, failureURL, notificationURL });
     if (!apiKey) return console.error("Missing apiKey");
     const verifier = new AgeVerification();
     verifier.configure({
       apiKey,
-      qrContainerSelector: "#bit-age-verification-qr",
-      logContainerSelector: "#bit-age-verification-logs",
+      qrContainerSelector: "#embed-qr-code",
+      logContainerSelector: "#embed-qr-code-logs",
+      onVerificationWaitingForScan: () => callbackModule.handleState(callbackModule.STATES.WaitingForScan),
       onVerificationSuccess: () => callbackModule.handleState(callbackModule.STATES.Approved),
       onVerificationFailure: () => callbackModule.handleState(callbackModule.STATES.Timeout),
       onVerificationScanning: () => callbackModule.handleState(callbackModule.STATES.Scanned),
@@ -230,7 +213,7 @@
     });
     verifier.generateQRCode();
     callbackModule.setOptions({
-      qrCodeSelector: "#bit-age-verification-qr",
+      qrCodeSelector: "#embed-qr-code-qr",
       generateQRCodeFunction: () => verifier.generateQRCode(),
       successRedirectURL: successURL,
       failRedirectURL: failureURL

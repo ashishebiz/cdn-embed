@@ -1,8 +1,3 @@
-export const log = (...args: unknown[]) => console.log("[bit-age-verification]", ...args);
-
-export function logData(container: HTMLElement | null, data: any): void {
-  if (!container) return;
-  const logEntry = document.createElement("div");
-  logEntry.innerText = JSON.stringify(data, null, 2);
-  container.prepend(logEntry);
-}
+export const infoLog = (...args: unknown[]) => console.log("[cdn-embed]", ...args);
+export const errorLog = (...args: unknown[]) => console.error("[cdn-embed]", ...args);
+export const warnLog = (...args: unknown[]) => console.warn("[cdn-embed]", ...args);

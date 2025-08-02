@@ -1,17 +1,19 @@
 import { AgeVerification, callbackModule } from "./api";
-import { extractQueryParams } from "./helpers";
+import { extractQueryParams, infoLog } from "./helpers";
 
 (() => {
-  const { apiKey, successURL, failureURL } = extractQueryParams();
-  console.log("🚀 ~ apiKey, successURL, failureURL 001", apiKey, successURL, failureURL);
+  const { apiKey, successURL, failureURL, notificationURL } = extractQueryParams();
+  infoLog({ apiKey, successURL, failureURL, notificationURL });
+
   if (!apiKey) return console.error("Missing apiKey");
 
   const verifier = new AgeVerification();
 
   verifier.configure({
     apiKey,
-    qrContainerSelector: "#bit-age-verification-qr",
-    logContainerSelector: "#bit-age-verification-logs",
+    qrContainerSelector: "#embed-qr-code",
+    logContainerSelector: "#embed-qr-code-logs",
+    onVerificationWaitingForScan: () => callbackModule.handleState(callbackModule.STATES.WaitingForScan),
     onVerificationSuccess: () => callbackModule.handleState(callbackModule.STATES.Approved),
     onVerificationFailure: () => callbackModule.handleState(callbackModule.STATES.Timeout),
     onVerificationScanning: () => callbackModule.handleState(callbackModule.STATES.Scanned),
@@ -23,7 +25,7 @@ import { extractQueryParams } from "./helpers";
   verifier.generateQRCode();
 
   callbackModule.setOptions({
-    qrCodeSelector: "#bit-age-verification-qr",
+    qrCodeSelector: "#embed-qr-code-qr",
     generateQRCodeFunction: () => verifier.generateQRCode(),
     successRedirectURL: successURL,
     failRedirectURL: failureURL,

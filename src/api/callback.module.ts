@@ -31,6 +31,9 @@ export const callbackModule = (() => {
     if ((state === STATES.RejectedByUser || state === STATES.RejectedByRequirement) && failURL) {
       redirectWithDelay(failURL, REDIRECT_DELAY);
     }
+    if (state === STATES.SomethingWentWrong && failURL) {
+      redirectWithDelay(failURL, REDIRECT_DELAY);
+    }
   }
 
   return {
