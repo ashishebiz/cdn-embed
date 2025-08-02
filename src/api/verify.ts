@@ -27,6 +27,9 @@ export class IdentityVerifier {
 
   private startPolling(sessionId: string) {
     this.pollingId && clearInterval(this.pollingId);
+
+    if (!sessionId) throw new Error("Session ID not found");
+
     this.pollingId = window.setInterval(async () => {
       try {
         const url = `${BASE_API_URL}${POLLING_ENDPOINT}/${sessionId}`;
