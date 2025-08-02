@@ -1,5 +1,5 @@
 "use strict";
-var AgeVerificationCDN = (() => {
+var IdentityVerificationCDN = (() => {
   var __async = (__this, __arguments, generator) => {
     return new Promise((resolve, reject) => {
       var fulfilled = (value) => {
@@ -22,9 +22,11 @@ var AgeVerificationCDN = (() => {
   };
 
   // src/constants/index.ts
-  var BASE_API_URL = "http://localhost:8888";
+  var BASE_API_URL = "https://api.chainit.online";
   var QR_GENERATION_ENDPOINT = "/rule-engine/v1/age-app-embedded/generate-qr";
   var POLLING_ENDPOINT = "/rule-engine/v1/age-app-embedded/get-qr";
+  var QR_CONTAINER_SELECTOR = "#embed-qr-code";
+  var LOG_CONTAINER_SELECTOR = "#embed-qr-code-logs";
   var POLLING_INTERVAL = 5e3;
   var REDIRECT_DELAY = 1e4;
   var STATES = {
@@ -45,13 +47,71 @@ var AgeVerificationCDN = (() => {
     });
   }
 
+  // src/ui/templates.ts
+  var getMessageHTML = (state) => {
+    const messages = {
+      Timeout: `
+    <div style="margin-bottom: 10px; color: #fff;">QR expired.</div>
+    <a id='new-qr-button' style="
+      margin-top: 10px;
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #000;
+      border: 1px solid #fff;
+      color: #fff;
+      border-radius: 6px;
+      text-decoration: none;
+      cursor:pointer;
+    ">New QR</a>
+  `,
+      Scanned: `
+    <div style="font-size: 30px; margin-bottom: 10px;">\u23F3</div>
+    <div style="color: #fff;">Scanning in progress...</div>
+  `,
+      Approved: `
+    <div style="font-size: 30px; margin-bottom: 10px;">\u2705</div>
+    <div style="color: #00ff99;">Access granted in 10s.</div>
+  `,
+      RejectedByUser: `
+    <div style="font-size: 30px; margin-bottom: 10px;">\u274C</div>
+    <div style="color: #ff4444;">Access Denied</div>
+  `,
+      RejectedByRequirement: `
+    <div style="font-size: 30px; margin-bottom: 10px;">\u274C</div>
+    <div style="color: #ff4444;">Access Denied</div>
+  `,
+      WaitingForScan: `
+    <div style="font-size: 30px; margin-bottom: 10px;">\u{1F4F7}</div>
+    <div style="color: #fff;">Waiting for scan...</div>
+  `,
+      SomethingWentWrong: `
+    <div style="font-size: 30px; margin-bottom: 10px;">\u26A0\uFE0F</div>
+    <div style="color: #ff4444;">Something went wrong</div>
+  `
+    };
+    return messages[state];
+  };
+  var getLogMessageHTML = (state) => {
+    const messages = {
+      Timeout: `QR Expired`,
+      Scanned: `Scanning in progress`,
+      Approved: `Access Granted`,
+      RejectedByUser: `Access Denied`,
+      RejectedByRequirement: `Access Denied`,
+      WaitingForScan: `Waiting for scan`,
+      SomethingWentWrong: `Something went wrong`
+    };
+    return messages[state];
+  };
+
   // src/helpers/dom.helper.ts
   var getElement = (selector) => document.querySelector(selector);
-  function logData(container, data) {
+  function logData(container, state) {
     if (!container) return;
-    const logEntry = document.createElement("div");
-    logEntry.innerText = JSON.stringify(data, null, 2);
-    container.prepend(logEntry);
+    const p = document.createElement("p");
+    p.innerHTML = getLogMessageHTML(state);
+    p.style.cssText = "margin-bottom:10px;padding:8px;";
+    container.prepend(p);
   }
 
   // src/helpers/log.helper.ts
@@ -75,21 +135,23 @@ var AgeVerificationCDN = (() => {
   };
 
   // src/api/verify.ts
-  var AgeVerification = class {
+  var IdentityVerifier = class {
     constructor() {
       this.pollingId = null;
+      this.qrContainer = null;
     }
     configure(options) {
       this.options = options;
     }
     displayQRCode(qrCodeUrl, deepLink) {
       var _a;
-      const container = getElement(this.options.qrContainerSelector);
-      if (!container) {
+      this.qrContainer = getElement(this.options.qrContainerSelector);
+      if (!this.qrContainer) {
         errorLog("QR Container not found");
+        this.pollingId && clearInterval(this.pollingId);
         return;
       }
-      container.innerHTML = `<div id="qr-code" class="w-100 h-100" style="cursor:pointer;text-align:center;">
+      this.qrContainer.innerHTML = `<div id="qr-code" class="w-100 h-100" style="cursor:pointer;text-align:center;">
       <img src="${qrCodeUrl}" alt="QR Code" style="width:100%;height:100%;" /></div>`;
       (_a = document.getElementById("qr-code")) == null ? void 0 : _a.addEventListener("click", () => window.open(deepLink, "_blank"));
     }
@@ -104,26 +166,52 @@ var AgeVerificationCDN = (() => {
         } catch (err) {
           errorLog("Polling error", err);
           this.handleState(STATES.Timeout);
+          this.pollingId && clearInterval(this.pollingId);
         }
       }), POLLING_INTERVAL);
     }
     handleState(state) {
+      var _a;
       const cb = this.options;
+      if (!cb.qrContainerSelector) {
+        errorLog("QR Container not found");
+        this.pollingId && clearInterval(this.pollingId);
+      }
+      const html = getMessageHTML(state);
+      if (this.qrContainer && state !== STATES.WaitingForScan) {
+        this.qrContainer.innerHTML = `<div  style="
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        flex-direction: column;
+        ">${html}</div>`;
+      }
       switch (state) {
         case STATES.WaitingForScan:
-          return cb.onVerificationWaitingForScan();
         case STATES.Scanned:
-          return cb.onVerificationScanning();
+          break;
         case STATES.Approved:
-          return cb.onVerificationSuccess();
-        case STATES.RejectedByUser:
-          return cb.onVerificationRejectedByUser();
-        case STATES.RejectedByRequirement:
-          return cb.onVerificationRejectedByRequirements();
+          if (cb.successRedirectURL) redirectWithDelay(cb.successRedirectURL, REDIRECT_DELAY);
+          break;
         case STATES.Timeout:
-          return cb.onVerificationTimeout();
+          infoLog(this.options);
+          (_a = document.getElementById("new-qr-button")) == null ? void 0 : _a.addEventListener("click", () => this.generateQRCode());
+          this.pollingId && clearInterval(this.pollingId);
+          break;
+        case STATES.SomethingWentWrong:
+          if (cb.failRedirectURL) {
+            redirectWithDelay(cb.failRedirectURL, REDIRECT_DELAY);
+          }
+          this.pollingId && clearInterval(this.pollingId);
+        case STATES.RejectedByUser:
+        case STATES.RejectedByRequirement:
         default:
-          return cb.onVerificationFailure();
+          errorLog("Invalid state:", state);
+          this.pollingId && clearInterval(this.pollingId);
+          break;
       }
     }
     generateQRCode() {
@@ -141,82 +229,19 @@ var AgeVerificationCDN = (() => {
     }
   };
 
-  // src/ui/templates.ts
-  var getMessageHTML = (state) => {
-    const messages = {
-      Timeout: `<div class='message'>QR expired.</div><a id='new-qr-button' class='button secondary'>New QR</a>`,
-      Scanned: `<div class='spinner'></div><div class='message'>Scanning in progress...</div>`,
-      Approved: `<div class='checkmark'></div><div class='message'>Access granted in 10s.</div>`,
-      RejectedByUser: `<div class='cross'></div><div class='message denied'>Access Denied</div>`,
-      RejectedByRequirement: `<div class='cross'></div><div class='message denied'>Access Denied</div>`,
-      WaitingForScan: "<div class='spinner'></div><div class='message'>Waiting for scan...</div>",
-      SomethingWentWrong: `<div class='cross'></div><div class='message denied'>Something went wrong</div>`
-    };
-    return messages[state];
-  };
-
-  // src/api/callback.module.ts
-  var callbackModule = /* @__PURE__ */ (() => {
-    let container = null;
-    let generateQRCode;
-    let successURL = "";
-    let failURL = "";
-    function setOptions(options) {
-      container = document.querySelector(options.qrCodeSelector);
-      if (!container) return;
-      generateQRCode = options.generateQRCodeFunction;
-      successURL = options.successRedirectURL || "";
-      failURL = options.failRedirectURL || "";
-    }
-    function handleState(state) {
-      var _a;
-      if (!container) return;
-      const html = getMessageHTML(state);
-      container.innerHTML = `<div class='w-100 h-100 align-content-center'>${html}</div>`;
-      if (state === STATES.Timeout && generateQRCode) {
-        (_a = document.getElementById("new-qr-button")) == null ? void 0 : _a.addEventListener("click", generateQRCode);
-      }
-      if (state === STATES.Approved && successURL) {
-        redirectWithDelay(successURL, REDIRECT_DELAY);
-      }
-      if ((state === STATES.RejectedByUser || state === STATES.RejectedByRequirement) && failURL) {
-        redirectWithDelay(failURL, REDIRECT_DELAY);
-      }
-      if (state === STATES.SomethingWentWrong && failURL) {
-        redirectWithDelay(failURL, REDIRECT_DELAY);
-      }
-    }
-    return {
-      setOptions,
-      handleState,
-      STATES
-    };
-  })();
-
   // src/main.ts
   (() => {
     const { apiKey, successURL, failureURL, notificationURL } = extractQueryParams();
     infoLog({ apiKey, successURL, failureURL, notificationURL });
-    if (!apiKey) return console.error("Missing apiKey");
-    const verifier = new AgeVerification();
+    if (!apiKey) return errorLog("Missing 'apiKey' in script tag. Example usage: <script src='...main.js data-api-key=your-api-key'>");
+    const verifier = new IdentityVerifier();
     verifier.configure({
       apiKey,
-      qrContainerSelector: "#embed-qr-code",
-      logContainerSelector: "#embed-qr-code-logs",
-      onVerificationWaitingForScan: () => callbackModule.handleState(callbackModule.STATES.WaitingForScan),
-      onVerificationSuccess: () => callbackModule.handleState(callbackModule.STATES.Approved),
-      onVerificationFailure: () => callbackModule.handleState(callbackModule.STATES.Timeout),
-      onVerificationScanning: () => callbackModule.handleState(callbackModule.STATES.Scanned),
-      onVerificationRejectedByUser: () => callbackModule.handleState(callbackModule.STATES.RejectedByUser),
-      onVerificationRejectedByRequirements: () => callbackModule.handleState(callbackModule.STATES.RejectedByRequirement),
-      onVerificationTimeout: () => callbackModule.handleState(callbackModule.STATES.Timeout)
-    });
-    verifier.generateQRCode();
-    callbackModule.setOptions({
-      qrCodeSelector: "#embed-qr-code-qr",
-      generateQRCodeFunction: () => verifier.generateQRCode(),
+      qrContainerSelector: QR_CONTAINER_SELECTOR,
+      logContainerSelector: LOG_CONTAINER_SELECTOR,
       successRedirectURL: successURL,
       failRedirectURL: failureURL
     });
+    verifier.generateQRCode();
   })();
 })();

@@ -1,14 +1,18 @@
+import { VerificationState } from "../types";
+import { getLogMessageHTML, getMessageHTML } from "../ui";
+
 export const getElement = (selector: string) => document.querySelector<HTMLElement>(selector);
 
 export const setHTML = (el: HTMLElement, html: string) => {
   el.innerHTML = html;
 };
 
-export function logData(container: HTMLElement | null, data: any): void {
+export function logData(container: HTMLElement | null, state: VerificationState): void {
   if (!container) return;
-  const logEntry = document.createElement("div");
-  logEntry.innerText = JSON.stringify(data, null, 2);
-  container.prepend(logEntry);
+  const p = document.createElement("p");
+  p.innerHTML = getLogMessageHTML(state);
+  p.style.cssText = "margin-bottom:10px;padding:8px;";
+  container.prepend(p);
 }
 
 export const delayRedirect = (url: string, delay = 10000) => setTimeout(() => (window.location.href = url), delay);

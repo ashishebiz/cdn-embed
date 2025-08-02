@@ -2,28 +2,117 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CDN Embed Script</title>
+    <title>Security Access</title>
+    <style>
+      body {
+        background-color: #0e0e11;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0%;
+      }
+
+      h1 {
+        color: #33e6c2;
+        margin-bottom: 5px;
+      }
+
+      .subtext {
+        margin-bottom: 20px;
+        color: #aaa;
+      }
+
+      .info-box {
+        background-color: #1c1c22;
+        color: #33aaff;
+        border-left: 5px solid #ffaa33;
+        padding: 10px 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-weight: 500;
+      }
+
+      .main-content {
+        display: flex;
+        gap: 40px;
+        margin-top: 30px;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .qr-container {
+        background-color: #1c1c22;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0, 255, 200, 0.2);
+      }
+
+      .qr-container img {
+        height: 250px;
+        width: 250px;
+      }
+      .side-panel {
+        background-color: #1c1c22;
+        border-left: 4px solid #33e6c2;
+        padding: 30px;
+        border-radius: 12px;
+        color: #ccc;
+        max-width: 300px;
+        max-height: 300px;
+        width: 100%;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        overflow-y: auto;
+      }
+
+      .side-panel img {
+        max-width: 100%;
+        border-radius: 8px;
+        margin-bottom: 15px;
+      }
+
+      .back-btn {
+        margin-top: 30px;
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #0d0d12;
+        border: 1px solid #33e6c2;
+        color: #33e6c2;
+        border-radius: 6px;
+        text-decoration: none;
+      }
+
+      .back-btn:hover {
+        background-color: #33e6c2;
+        color: #000;
+      }
+    </style>
   </head>
   <body>
-    <h1>CDN Embed Script</h1>
-    <div id="embed-qr-code" style="width: 300px; height: 300px"></div>
-    <div id="embed-qr-code-logs" style="width: 300px; height: 300px"></div>
-    <!-- <script src="https://cdn.jsdelivr.net/gh/ashishebiz/cdn-embed/dist/index.js?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvcmdJZCI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMCIsIm1ldGFkYXRhIjpudWxsLCJlbWJlZElkIjoiYzk0ZWM3MmYtODVmYy00NDllLWEzMzYtYzQzMGMxMjhiYzNiIiwidG9rZW5JZCI6ImYzOGZmNDJhLWFiYzctNGMwMC04ODdiLTAxZWJiNWYzNzAzZSIsInNpZ25LZXkiOiJlbWJlZDpmNGE4M2Q5OC1kMjAwLTRjYTQtYjY4Ny1hYTY2MzdhODMxYmEiLCJpYXQiOjE3NTQxMTYxNjR9.2_cVBmp8Fiug6inu3N7QGIj0nkntPi44D55Nrb9-RUM""></script> -->
+    <h1>🔐 Security Access</h1>
+    <p class="subtext">Scan the QR code below to access the secure area</p>
 
-    <!-- <script src="https://cdn.jsdelivr.net/gh/ashishebiz/cdn-embed/dist/main.js?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
-    eyJvcmdJZCI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMCIsIm1ldGFkYXRhIjpudWxsLCJlbWJlZElkIjoiYzk0ZWM3MmYtODVmYy00NDllLWEzMzYtYzQzMGMxMjhiYzNiIiwidG9rZW5JZCI6ImYzOGZmNDJhLWFiYzctNGMwMC04ODdiLTAxZWJiNWYzNzAzZSIsInNpZ25LZXkiOiJlbWJlZDpmNGE4M2Q5OC1kMjAwLTRjYTQtYjY4Ny1hYTY2MzdhODMxYmEiLCJpYXQiOjE3NTQxMTYxNjR9.2_cVBmp8Fiug6inu3N7QGIj0nkntPi44D55Nrb9-RUM"></script> -->
+    <div class="info-box">🔒 Secure verification required - Please scan with your mobile device</div>
 
-    <!-- <script src="/temp/old.js?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvcmdJZCI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMCIsIm1ldGFkYXRhIjpudWxsLCJlbWJlZElkIjoiYzk0ZWM3MmYtODVmYy00NDllLWEzMzYtYzQzMGMxMjhiYzNiIiwidG9rZW5JZCI6ImYzOGZmNDJhLWFiYzctNGMwMC04ODdiLTAxZWJiNWYzNzAzZSIsInNpZ25LZXkiOiJlbWJlZDpmNGE4M2Q5OC1kMjAwLTRjYTQtYjY4Ny1hYTY2MzdhODMxYmEiLCJpYXQiOjE3NTQxMTYxNjR9.2_cVBmp8Fiug6inu3N7QGIj0nkntPi44D55Nrb9-RUM"></script> -->
+    <div class="main-content">
+      <div class="qr-container" id="embed-qr-code" style="width: 300px; height: 300px"></div>
+
+      <div class="side-panel" id="embed-qr-code-logs" style="width: 300px; height: 300px"></div>
+    </div>
+
+    <a href="/src/demo-html/home.html" class="back-btn">Home Page</a>
 
     <script
-      src="/dist/index.js"
+      src="/dist/index.local.js"
       data-api-key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvcmdJZCI6IjAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMCIsIm1ldGFkYXRhIjpudWxsLCJlbWJlZElkIjoiYzk0ZWM3MmYtODVmYy00NDllLWEzMzYtYzQzMGMxMjhiYzNiIiwidG9rZW5JZCI6ImYzOGZmNDJhLWFiYzctNGMwMC04ODdiLTAxZWJiNWYzNzAzZSIsInNpZ25LZXkiOiJlbWJlZDpmNGE4M2Q5OC1kMjAwLTRjYTQtYjY4Ny1hYTY2MzdhODMxYmEiLCJpYXQiOjE3NTQxMTYxNjR9.2_cVBmp8Fiug6inu3N7QGIj0nkntPi44D55Nrb9-RUM"
       data-success-url="https://develop-admin-react.chainit.online/"
       data-failure-url="https://develop-admin-react.chainit.online/"
       data-notification-url="https://develop-admin-react.chainit.online/"
     ></script>
-
-    <!-- <script src="https://cdn.jsdelivr.net/gh/sanketebiz/chainit-qr-embed/develop/develop.min.js?apiKey=5c2cd901-146c-4cf4-8aa9-33f59a660a13&successURL=https%3A%2F%2Fdevelop-admin-react.chainit.online&failureURL=https%3A%2F%2Fdevelop-admin-react.chainit.online&notificationURL=https%3A%2F%2Fdevelop-admin-react.chainit.online"></script> -->
   </body>
 </html>

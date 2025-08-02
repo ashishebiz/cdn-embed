@@ -2,13 +2,63 @@ import { VerificationState } from "../types";
 
 export const getMessageHTML = (state: VerificationState): string => {
   const messages: Record<VerificationState, string> = {
-    Timeout: `<div class='message'>QR expired.</div><a id='new-qr-button' class='button secondary'>New QR</a>`,
-    Scanned: `<div class='spinner'></div><div class='message'>Scanning in progress...</div>`,
-    Approved: `<div class='checkmark'></div><div class='message'>Access granted in 10s.</div>`,
-    RejectedByUser: `<div class='cross'></div><div class='message denied'>Access Denied</div>`,
-    RejectedByRequirement: `<div class='cross'></div><div class='message denied'>Access Denied</div>`,
-    WaitingForScan: "<div class='spinner'></div><div class='message'>Waiting for scan...</div>",
-    SomethingWentWrong: `<div class='cross'></div><div class='message denied'>Something went wrong</div>`,
+    Timeout: `
+    <div style="margin-bottom: 10px; color: #fff;">QR expired.</div>
+    <a id='new-qr-button' style="
+      margin-top: 10px;
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #000;
+      border: 1px solid #fff;
+      color: #fff;
+      border-radius: 6px;
+      text-decoration: none;
+      cursor:pointer;
+    ">New QR</a>
+  `,
+
+    Scanned: `
+    <div style="font-size: 30px; margin-bottom: 10px;">⏳</div>
+    <div style="color: #fff;">Scanning in progress...</div>
+  `,
+
+    Approved: `
+    <div style="font-size: 30px; margin-bottom: 10px;">✅</div>
+    <div style="color: #00ff99;">Access granted in 10s.</div>
+  `,
+
+    RejectedByUser: `
+    <div style="font-size: 30px; margin-bottom: 10px;">❌</div>
+    <div style="color: #ff4444;">Access Denied</div>
+  `,
+
+    RejectedByRequirement: `
+    <div style="font-size: 30px; margin-bottom: 10px;">❌</div>
+    <div style="color: #ff4444;">Access Denied</div>
+  `,
+
+    WaitingForScan: `
+    <div style="font-size: 30px; margin-bottom: 10px;">📷</div>
+    <div style="color: #fff;">Waiting for scan...</div>
+  `,
+
+    SomethingWentWrong: `
+    <div style="font-size: 30px; margin-bottom: 10px;">⚠️</div>
+    <div style="color: #ff4444;">Something went wrong</div>
+  `,
+  };
+  return messages[state];
+};
+
+export const getLogMessageHTML = (state: VerificationState): string => {
+  const messages: Record<VerificationState, string> = {
+    Timeout: `QR Expired`,
+    Scanned: `Scanning in progress`,
+    Approved: `Access Granted`,
+    RejectedByUser: `Access Denied`,
+    RejectedByRequirement: `Access Denied`,
+    WaitingForScan: `Waiting for scan`,
+    SomethingWentWrong: `Something went wrong`,
   };
   return messages[state];
 };

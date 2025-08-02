@@ -6,10 +6,10 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "nodemon --watch src --ext ts --exec NODE_ENV=local node esbuild.config.js",
-    "build:local": "NODE_ENV=local node esbuild.config.js",
-    "build:dev": "NODE_ENV=development node esbuild.config.js",
-    "build:staging": "NODE_ENV=staging node esbuild.config.js",
-    "build:prod": "NODE_ENV=production node esbuild.config.js",
+    "build:local": "NODE_ENV=local BASE_API_URL=http://localhost:8888 node esbuild.config.js",
+    "build:dev": "NODE_ENV=development BASE_API_URL=https://develop-api.chainit.online node esbuild.config.js",
+    "build:staging": "NODE_ENV=staging BASE_API_URL=https://staging-api.chainit.online node esbuild.config.js",
+    "build:prod": "NODE_ENV=production BASE_API_URL=https://api.chainit.online node esbuild.config.js",
     "build:all": "npm run build:local && npm run build:dev && npm run build:staging && npm run build:prod"
   },
   "author": "",

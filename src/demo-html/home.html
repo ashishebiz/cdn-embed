@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Security Verified</title>
+    <style>
+      body {
+        background-color: #0e0e11;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0%;
+      }
+
+      h1 {
+        color: #33e6c2;
+        margin-bottom: 10px;
+      }
+
+      .verified-icon {
+        font-size: 60px;
+        color: #00cc66;
+        margin-bottom: 10px;
+      }
+
+      .card {
+        background-color: #1c1c22;
+        padding: 30px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 0 10px rgba(0, 255, 200, 0.2);
+      }
+
+      .status-box {
+        background-color: #121216;
+        color: #00cc66;
+        border: 1px solid #00cc66;
+        padding: 15px;
+        margin-top: 15px;
+        border-radius: 8px;
+      }
+
+      .secondary-status {
+        background-color: #121216;
+        color: #66ff66;
+        border: 1px solid #66ff66;
+        padding: 15px;
+        margin-top: 10px;
+        border-radius: 8px;
+      }
+
+      .success-message {
+        margin-top: 20px;
+        padding: 10px;
+        background-color: #ccffe6;
+        color: #000;
+        border-radius: 6px;
+      }
+
+      .back-btn {
+        margin-top: 20px;
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #0d0d12;
+        border: 1px solid #33e6c2;
+        color: #33e6c2;
+        border-radius: 6px;
+        text-decoration: none;
+      }
+
+      .back-btn:hover {
+        background-color: #33e6c2;
+        color: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="verified-icon">🛡️</div>
+      <h1>Security Verified</h1>
+      <p>Your QR code has been successfully scanned and verified.</p>
+
+      <div class="status-box">🔐 Secure Connection <br /><small>End-to-end encrypted</small></div>
+      <div class="secondary-status">✅ Authentication Complete <br /><small>Identity verified successfully</small></div>
+
+      <div class="success-message">Welcome! You have been granted access to the secure area.</div>
+
+      <a href="/src/demo-html/index.html" class="back-btn">Back to QR Generator</a>
+    </div>
+  </body>
+</html>

@@ -1,23 +1,17 @@
 import { build } from "esbuild";
 
-const ENV = process.env.NODE_ENV || "development";
-
-const BASE_URL_MAP = {
-  local: "http://localhost:8888",
-  development: "https://develop-api.chainit.online",
-  staging: "https://staging-api.chainit.online",
-  production: "https://api.chainit.online",
-};
+const ENV = process.env.NODE_ENV || "local";
+const BASE_API_URL = process.env.BASE_API_URL || "http://localhost:8888";
 
 const sharedConfig = {
   entryPoints: ["./src/main.ts"],
   bundle: true,
   format: "iife",
-  globalName: "AgeVerificationCDN",
+  globalName: "IdentityVerificationCDN",
   target: ["es6"],
   define: {
-    "process.env.NODE_ENV": `"${ENV}"`,
-    "process.env.API_BASE_URL": `"${BASE_URL_MAP[ENV]}"`,
+    "process.env.NODE_ENV": JSON.stringify(ENV),
+    "process.env.BASE_API_URL": JSON.stringify(BASE_API_URL),
   },
   sourcemap: false,
 };
