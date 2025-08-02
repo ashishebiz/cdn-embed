@@ -5,6 +5,7 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
+    "dev": "nodemon --watch src --ext ts --exec node esbuild.config.js",
     "build": "node esbuild.config.js"
   },
   "author": "",
@@ -12,6 +13,7 @@
   "devDependencies": {
     "@types/node": "^24.1.0",
     "esbuild": "^0.25.8",
+    "nodemon": "^3.1.10",
     "typescript": "^5.9.2"
   }
 }

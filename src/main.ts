@@ -3,6 +3,7 @@ import { extractQueryParams } from "./helpers";
 
 (() => {
   const { apiKey, successURL, failureURL } = extractQueryParams();
+  console.log("🚀 ~ apiKey, successURL, failureURL 001", apiKey, successURL, failureURL);
   if (!apiKey) return console.error("Missing apiKey");
 
   const verifier = new AgeVerification();

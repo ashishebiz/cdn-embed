@@ -6,7 +6,9 @@ export const redirectWithDelay = (url: string, delay: number): void => {
 
 export const extractQueryParams = () => {
   const script = document.currentScript as HTMLScriptElement;
+  console.log("🚀 ~ script 001", script);
   const src = script?.src || "";
+  console.log(new URL(src));
   const params = new URL(src).searchParams;
 
   return {
