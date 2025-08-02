@@ -91,6 +91,7 @@
   };
   var extractQueryParams = () => {
     const script = document.currentScript;
+    console.log("\u{1F680} ~ script 001", script);
     const src = (script == null ? void 0 : script.src) || "";
     console.log(new URL(src));
     const params = new URL(src).searchParams;
