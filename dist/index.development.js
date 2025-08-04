@@ -39,9 +39,9 @@ var IdentityVerificationCDN = (() => {
 
   // src/constants/index.ts
   var BASE_API_URL = "https://develop-api.chainit.online";
-  var QR_GENERATION_ENDPOINT = "/rule-engine/v1/age-app-embed/generate-qr";
-  var POLLING_ENDPOINT = "/rule-engine/v1/age-app-embed/get-qr";
-  var VALIDATE_IDENTITY_ENDPOINT = "http://localhost:8110/public-base/v1/embed/validate";
+  var AGE_APP_QR_GENERATION_ENDPOINT = "/rule-engine/v1/age-app-embed/generate-qr";
+  var AGE_APP_POLLING_ENDPOINT = "/rule-engine/v1/age-app-embed/get-qr";
+  var VALIDATE_IDENTITY_ENDPOINT = "/public-base/v1/embed/validate";
   var SIGN_KEY_HEADER = "x-sign-key";
   var ORG_ID_HEADER = "x-organization-id";
   var DEFAULT_HEADERS = {
@@ -198,7 +198,7 @@ var IdentityVerificationCDN = (() => {
       if (!sessionId) throw new Error("Session ID not found");
       this.pollingId = window.setInterval(() => __async(this, null, function* () {
         try {
-          const url = `${BASE_API_URL}${POLLING_ENDPOINT}/${sessionId}`;
+          const url = `${BASE_API_URL}${AGE_APP_POLLING_ENDPOINT}/${sessionId}`;
           const data = yield getRequest(url, { "x-sign-key": this.options.apiKey });
           logData(getElement(this.options.logContainerSelector || ""), data.scanningState);
           if (data == null ? void 0 : data.scanningState) this.handleState(data.scanningState);
@@ -256,7 +256,7 @@ var IdentityVerificationCDN = (() => {
     validateIdentityAndGenerateQRCode() {
       return __async(this, null, function* () {
         try {
-          const url = `${VALIDATE_IDENTITY_ENDPOINT}?token=${this.options.apiKey}`;
+          const url = `${VALIDATE_IDENTITY_ENDPOINT}${VALIDATE_IDENTITY_ENDPOINT}?token=${this.options.apiKey}`;
           const response = yield postRequest(url, {});
           if (!response.status || !response.data) throw new Error("Invalid identity");
           const { contextType, entityId, orgId, id } = response.data;
@@ -278,7 +278,7 @@ var IdentityVerificationCDN = (() => {
     generateAgeAppQRCode(eventId, orgId) {
       return __async(this, null, function* () {
         try {
-          const url = `${BASE_API_URL}${QR_GENERATION_ENDPOINT}/${eventId}`;
+          const url = `${BASE_API_URL}${AGE_APP_QR_GENERATION_ENDPOINT}/${eventId}`;
           const data = yield getRequest(url, { [SIGN_KEY_HEADER]: this.options.apiKey, [ORG_ID_HEADER]: orgId });
           this.displayQRCode(data.qrCodeUrl, data.deepLink);
           this.startPolling(data.sessionId);
