@@ -1,6 +1,6 @@
 export const BASE_API_URL = process?.env?.BASE_API_URL || "http://localhost:8888";
-export const QR_GENERATION_ENDPOINT = "/rule-engine/v1/age-app-embedded/generate-qr";
-export const POLLING_ENDPOINT = "/rule-engine/v1/age-app-embedded/get-qr";
+export const QR_GENERATION_ENDPOINT = "/rule-engine/v1/age-app-embed/generate-qr";
+export const POLLING_ENDPOINT = "/rule-engine/v1/age-app-embed/get-qr";
 
 export const SIGN_KEY_HEADER = "x-sign-key";
 export const DEFAULT_HEADERS = {

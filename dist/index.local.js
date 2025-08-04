@@ -23,8 +23,8 @@ var IdentityVerificationCDN = (() => {
 
   // src/constants/index.ts
   var BASE_API_URL = "http://localhost:8888";
-  var QR_GENERATION_ENDPOINT = "/rule-engine/v1/age-app-embedded/generate-qr";
-  var POLLING_ENDPOINT = "/rule-engine/v1/age-app-embedded/get-qr";
+  var QR_GENERATION_ENDPOINT = "/rule-engine/v1/age-app-embed/generate-qr";
+  var POLLING_ENDPOINT = "/rule-engine/v1/age-app-embed/get-qr";
   var QR_CONTAINER_SELECTOR = "#embed-qr-code";
   var LOG_CONTAINER_SELECTOR = "#embed-qr-code-logs";
   var POLLING_INTERVAL = 5e3;
