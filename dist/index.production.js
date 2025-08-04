@@ -1,5 +1,21 @@
 "use strict";
 var IdentityVerificationCDN = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __propIsEnum = Object.prototype.propertyIsEnumerable;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __spreadValues = (a, b) => {
+    for (var prop in b || (b = {}))
+      if (__hasOwnProp.call(b, prop))
+        __defNormalProp(a, prop, b[prop]);
+    if (__getOwnPropSymbols)
+      for (var prop of __getOwnPropSymbols(b)) {
+        if (__propIsEnum.call(b, prop))
+          __defNormalProp(a, prop, b[prop]);
+      }
+    return a;
+  };
   var __async = (__this, __arguments, generator) => {
     return new Promise((resolve, reject) => {
       var fulfilled = (value) => {
@@ -25,6 +41,16 @@ var IdentityVerificationCDN = (() => {
   var BASE_API_URL = "https://api.chainit.online";
   var QR_GENERATION_ENDPOINT = "/rule-engine/v1/age-app-embed/generate-qr";
   var POLLING_ENDPOINT = "/rule-engine/v1/age-app-embed/get-qr";
+  var VALIDATE_IDENTITY_ENDPOINT = "http://localhost:8110/public-base/v1/embed/validate";
+  var SIGN_KEY_HEADER = "x-sign-key";
+  var ORG_ID_HEADER = "x-organization-id";
+  var DEFAULT_HEADERS = {
+    "Content-Type": "application/json"
+  };
+  var CONTEXT_TYPES = {
+    AGE_APP: "age_app",
+    CHECK_IN: "check_in"
+  };
   var QR_CONTAINER_SELECTOR = "#embed-qr-code";
   var LOG_CONTAINER_SELECTOR = "#embed-qr-code-logs";
   var POLLING_INTERVAL = 5e3;
@@ -43,6 +69,17 @@ var IdentityVerificationCDN = (() => {
   function getRequest(_0) {
     return __async(this, arguments, function* (url, headers = {}) {
       const res = yield fetch(url, { method: "GET", headers });
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      return res.json();
+    });
+  }
+  function postRequest(_0, _1) {
+    return __async(this, arguments, function* (url, body, headers = {}) {
+      const res = yield fetch(url, {
+        method: "POST",
+        headers: __spreadValues(__spreadValues({}, DEFAULT_HEADERS), headers),
+        body: JSON.stringify(body)
+      });
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);
       return res.json();
     });
@@ -200,7 +237,7 @@ var IdentityVerificationCDN = (() => {
           break;
         case STATES.Timeout:
           infoLog(this.options);
-          (_a = document.getElementById("new-qr-button")) == null ? void 0 : _a.addEventListener("click", () => this.generateQRCode());
+          (_a = document.getElementById("new-qr-button")) == null ? void 0 : _a.addEventListener("click", () => this.validateIdentityAndGenerateQRCode());
           this.pollingId && clearInterval(this.pollingId);
           break;
         case STATES.SomethingWentWrong:
@@ -216,12 +253,33 @@ var IdentityVerificationCDN = (() => {
           break;
       }
     }
-    generateQRCode() {
+    validateIdentityAndGenerateQRCode() {
       return __async(this, null, function* () {
-        const eventId = "/e42cb048-4a64-4826-af03-5e7eb3a9fa9c";
+        try {
+          const url = `${VALIDATE_IDENTITY_ENDPOINT}?token=${this.options.apiKey}`;
+          const response = yield postRequest(url, {});
+          if (!response.status || !response.data) throw new Error("Invalid identity");
+          const { contextType, entityId, orgId, id } = response.data;
+          switch (contextType) {
+            case CONTEXT_TYPES.AGE_APP:
+              yield this.generateAgeAppQRCode(entityId, orgId);
+              infoLog("QR code generated successfully");
+              break;
+            default:
+              errorLog("Unknown context type");
+              break;
+          }
+          return;
+        } catch (err) {
+          errorLog("Failed to generate QR code:", err);
+        }
+      });
+    }
+    generateAgeAppQRCode(eventId, orgId) {
+      return __async(this, null, function* () {
         try {
           const url = `${BASE_API_URL}${QR_GENERATION_ENDPOINT}/${eventId}`;
-          const data = yield getRequest(url, { "x-sign-key": this.options.apiKey });
+          const data = yield getRequest(url, { [SIGN_KEY_HEADER]: this.options.apiKey, [ORG_ID_HEADER]: orgId });
           this.displayQRCode(data.qrCodeUrl, data.deepLink);
           this.startPolling(data.sessionId);
         } catch (err) {
@@ -244,6 +302,6 @@ var IdentityVerificationCDN = (() => {
       successRedirectURL: successURL,
       failRedirectURL: failureURL
     });
-    verifier.generateQRCode();
+    verifier.validateIdentityAndGenerateQRCode();
   })();
 })();

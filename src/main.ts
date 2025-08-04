@@ -18,5 +18,5 @@ import { errorLog, extractQueryParams, infoLog } from "./helpers";
     failRedirectURL: failureURL,
   });
 
-  verifier.generateQRCode();
+  verifier.validateIdentityAndGenerateQRCode();
 })();

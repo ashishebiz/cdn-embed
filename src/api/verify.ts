@@ -1,4 +1,15 @@
-import { QR_GENERATION_ENDPOINT, BASE_API_URL, POLLING_INTERVAL, STATES, POLLING_ENDPOINT, REDIRECT_DELAY } from "../constants";
+import {
+  QR_GENERATION_ENDPOINT,
+  BASE_API_URL,
+  POLLING_INTERVAL,
+  STATES,
+  POLLING_ENDPOINT,
+  REDIRECT_DELAY,
+  VALIDATE_IDENTITY_ENDPOINT,
+  SIGN_KEY_HEADER,
+  ORG_ID_HEADER,
+  CONTEXT_TYPES,
+} from "../constants";
 import { errorLog, getElement, infoLog, logData, redirectWithDelay } from "../helpers";
 import { VerificationOptions, VerificationState } from "../types";
 import { getMessageHTML } from "../ui";
@@ -74,7 +85,7 @@ export class IdentityVerifier {
         break;
       case STATES.Timeout:
         infoLog(this.options);
-        document.getElementById("new-qr-button")?.addEventListener("click", () => this.generateQRCode());
+        document.getElementById("new-qr-button")?.addEventListener("click", () => this.validateIdentityAndGenerateQRCode());
         this.pollingId && clearInterval(this.pollingId);
         break;
 
@@ -93,11 +104,34 @@ export class IdentityVerifier {
     }
   }
 
-  async generateQRCode() {
-    const eventId = "/e42cb048-4a64-4826-af03-5e7eb3a9fa9c";
+  async validateIdentityAndGenerateQRCode() {
+    try {
+      const url = `${VALIDATE_IDENTITY_ENDPOINT}?token=${this.options.apiKey}`;
+      const response = await postRequest(url, {});
+      if (!response.status || !response.data) throw new Error("Invalid identity");
+
+      const { contextType, entityId, orgId, id } = response.data;
+
+      switch (contextType) {
+        case CONTEXT_TYPES.AGE_APP:
+          await this.generateAgeAppQRCode(entityId, orgId);
+          infoLog("QR code generated successfully");
+          break;
+        default:
+          errorLog("Unknown context type");
+          break;
+      }
+
+      return;
+    } catch (err) {
+      errorLog("Failed to generate QR code:", err);
+    }
+  }
+
+  async generateAgeAppQRCode(eventId: string, orgId: string) {
     try {
       const url = `${BASE_API_URL}${QR_GENERATION_ENDPOINT}/${eventId}`;
-      const data = await getRequest(url, { "x-sign-key": this.options.apiKey });
+      const data = await getRequest(url, { [SIGN_KEY_HEADER]: this.options.apiKey, [ORG_ID_HEADER]: orgId });
       this.displayQRCode(data.qrCodeUrl, data.deepLink);
       this.startPolling(data.sessionId);
     } catch (err) {
