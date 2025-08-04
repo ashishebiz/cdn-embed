@@ -106,7 +106,7 @@ export class IdentityVerifier {
 
   async validateIdentityAndGenerateQRCode() {
     try {
-      const url = `${VALIDATE_IDENTITY_ENDPOINT}${VALIDATE_IDENTITY_ENDPOINT}?token=${this.options.apiKey}`;
+      const url = `${BASE_API_URL}${VALIDATE_IDENTITY_ENDPOINT}?token=${this.options.apiKey}`;
       const response = await postRequest(url, {});
       if (!response.status || !response.data) throw new Error("Invalid identity");
 

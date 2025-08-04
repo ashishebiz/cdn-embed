@@ -256,7 +256,7 @@ var IdentityVerificationCDN = (() => {
     validateIdentityAndGenerateQRCode() {
       return __async(this, null, function* () {
         try {
-          const url = `${VALIDATE_IDENTITY_ENDPOINT}${VALIDATE_IDENTITY_ENDPOINT}?token=${this.options.apiKey}`;
+          const url = `${BASE_API_URL}${VALIDATE_IDENTITY_ENDPOINT}?token=${this.options.apiKey}`;
           const response = yield postRequest(url, {});
           if (!response.status || !response.data) throw new Error("Invalid identity");
           const { contextType, entityId, orgId, id } = response.data;
