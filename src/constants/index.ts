@@ -1,7 +1,7 @@
 export const BASE_API_URL = process?.env?.BASE_API_URL || "http://localhost:8888";
-export const QR_GENERATION_ENDPOINT = "/rule-engine/v1/age-app-embed/generate-qr";
-export const POLLING_ENDPOINT = "/rule-engine/v1/age-app-embed/get-qr";
-export const VALIDATE_IDENTITY_ENDPOINT = "http://localhost:8110/public-base/v1/embed/validate";
+export const AGE_APP_QR_GENERATION_ENDPOINT = "/rule-engine/v1/age-app-embed/generate-qr";
+export const AGE_APP_POLLING_ENDPOINT = "/rule-engine/v1/age-app-embed/get-qr";
+export const VALIDATE_IDENTITY_ENDPOINT = "/public-base/v1/embed/validate";
 
 export const SIGN_KEY_HEADER = "x-sign-key";
 export const ORG_ID_HEADER = "x-organization-id";

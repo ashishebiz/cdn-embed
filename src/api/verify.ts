@@ -1,14 +1,14 @@
 import {
-  QR_GENERATION_ENDPOINT,
   BASE_API_URL,
   POLLING_INTERVAL,
   STATES,
-  POLLING_ENDPOINT,
+  AGE_APP_POLLING_ENDPOINT,
   REDIRECT_DELAY,
   VALIDATE_IDENTITY_ENDPOINT,
   SIGN_KEY_HEADER,
   ORG_ID_HEADER,
   CONTEXT_TYPES,
+  AGE_APP_QR_GENERATION_ENDPOINT,
 } from "../constants";
 import { errorLog, getElement, infoLog, logData, redirectWithDelay } from "../helpers";
 import { VerificationOptions, VerificationState } from "../types";
@@ -43,7 +43,7 @@ export class IdentityVerifier {
 
     this.pollingId = window.setInterval(async () => {
       try {
-        const url = `${BASE_API_URL}${POLLING_ENDPOINT}/${sessionId}`;
+        const url = `${BASE_API_URL}${AGE_APP_POLLING_ENDPOINT}/${sessionId}`;
         const data = await getRequest(url, { "x-sign-key": this.options.apiKey });
 
         logData(getElement(this.options.logContainerSelector || ""), data.scanningState);
@@ -106,7 +106,7 @@ export class IdentityVerifier {
 
   async validateIdentityAndGenerateQRCode() {
     try {
-      const url = `${VALIDATE_IDENTITY_ENDPOINT}?token=${this.options.apiKey}`;
+      const url = `${VALIDATE_IDENTITY_ENDPOINT}${VALIDATE_IDENTITY_ENDPOINT}?token=${this.options.apiKey}`;
       const response = await postRequest(url, {});
       if (!response.status || !response.data) throw new Error("Invalid identity");
 
@@ -130,7 +130,7 @@ export class IdentityVerifier {
 
   async generateAgeAppQRCode(eventId: string, orgId: string) {
     try {
-      const url = `${BASE_API_URL}${QR_GENERATION_ENDPOINT}/${eventId}`;
+      const url = `${BASE_API_URL}${AGE_APP_QR_GENERATION_ENDPOINT}/${eventId}`;
       const data = await getRequest(url, { [SIGN_KEY_HEADER]: this.options.apiKey, [ORG_ID_HEADER]: orgId });
       this.displayQRCode(data.qrCodeUrl, data.deepLink);
       this.startPolling(data.sessionId);
