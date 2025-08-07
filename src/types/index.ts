@@ -16,4 +16,5 @@ export interface VerificationOptions {
   apiBaseUrl?: string;
   successRedirectURL?: string;
   failRedirectURL?: string;
+  notificationURL?: string;
 }

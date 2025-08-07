@@ -3,8 +3,8 @@ import { LOG_CONTAINER_SELECTOR, QR_CONTAINER_SELECTOR } from "./constants";
 import { errorLog, extractQueryParams, infoLog } from "./helpers";
 
 (() => {
-  const { apiKey, successURL, failureURL, notificationURL } = extractQueryParams();
-  infoLog({ apiKey, successURL, failureURL, notificationURL });
+  const { apiKey, successRedirectURL, failRedirectURL, notificationURL } = extractQueryParams();
+  infoLog({ apiKey, successRedirectURL, failRedirectURL, notificationURL });
 
   if (!apiKey) return errorLog("Missing 'apiKey' in script tag. Example usage: <script src='...main.js data-api-key=your-api-key'>");
 
@@ -14,8 +14,9 @@ import { errorLog, extractQueryParams, infoLog } from "./helpers";
     apiKey,
     qrContainerSelector: QR_CONTAINER_SELECTOR,
     logContainerSelector: LOG_CONTAINER_SELECTOR,
-    successRedirectURL: successURL,
-    failRedirectURL: failureURL,
+    successRedirectURL,
+    failRedirectURL,
+    notificationURL,
   });
 
   verifier.validateIdentityAndGenerateQRCode();

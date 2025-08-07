@@ -44,7 +44,7 @@ export class IdentityVerifier {
     this.pollingId = window.setInterval(async () => {
       try {
         const url = `${BASE_API_URL}${AGE_APP_POLLING_ENDPOINT}/${sessionId}`;
-        const data = await getRequest(url, { "x-sign-key": this.options.apiKey });
+        const data = await getRequest(url, { [SIGN_KEY_HEADER]: this.options.apiKey });
 
         logData(getElement(this.options.logContainerSelector || ""), data.scanningState);
         if (data?.scanningState) this.handleState(data.scanningState);
@@ -106,11 +106,16 @@ export class IdentityVerifier {
 
   async validateIdentityAndGenerateQRCode() {
     try {
-      const url = `${BASE_API_URL}${VALIDATE_IDENTITY_ENDPOINT}?token=${this.options.apiKey}`;
-      const response = await postRequest(url, {});
+      const url = `${BASE_API_URL}${VALIDATE_IDENTITY_ENDPOINT}`;
+      const response = await postRequest(url, {
+        token: this.options.apiKey,
+        successNavigateUrl: this.options.successRedirectURL,
+        failureNavigateUrl: this.options.failRedirectURL,
+        notificationUrl: this.options.notificationURL,
+      });
       if (!response.status || !response.data) throw new Error("Invalid identity");
 
-      const { contextType, entityId, orgId, id } = response.data;
+      const { contextType, entityId, orgId } = response.data;
 
       switch (contextType) {
         case CONTEXT_TYPES.AGE_APP:
@@ -130,12 +135,12 @@ export class IdentityVerifier {
 
   async generateAgeAppQRCode(eventId: string, orgId: string) {
     try {
-      const url = `${BASE_API_URL}${AGE_APP_QR_GENERATION_ENDPOINT}/${eventId}`;
+      const url = `${BASE_API_URL}${AGE_APP_QR_GENERATION_ENDPOINT}/${eventId}?notificationURL=${this.options.notificationURL}`;
       const data = await getRequest(url, { [SIGN_KEY_HEADER]: this.options.apiKey, [ORG_ID_HEADER]: orgId });
       this.displayQRCode(data.qrCodeUrl, data.deepLink);
       this.startPolling(data.sessionId);
     } catch (err) {
-      errorLog("Failed to generate QR code:", err);
+      errorLog("Failed to generate Age App QR code:", err);
     }
   }
 }

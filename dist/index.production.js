@@ -68,19 +68,29 @@ var IdentityVerificationCDN = (() => {
   // src/api/request.ts
   function getRequest(_0) {
     return __async(this, arguments, function* (url, headers = {}) {
+      var _a;
       const res = yield fetch(url, { method: "GET", headers });
-      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      if (!res.ok) {
+        const message = (_a = yield res.json()) == null ? void 0 : _a.message;
+        alert(message);
+        throw new Error(`${res.status} : ${message}`);
+      }
       return res.json();
     });
   }
   function postRequest(_0, _1) {
     return __async(this, arguments, function* (url, body, headers = {}) {
+      var _a;
       const res = yield fetch(url, {
         method: "POST",
         headers: __spreadValues(__spreadValues({}, DEFAULT_HEADERS), headers),
         body: JSON.stringify(body)
       });
-      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      if (!res.ok) {
+        const message = (_a = yield res.json()) == null ? void 0 : _a.message;
+        alert(message);
+        throw new Error(`${res.status} : ${message}`);
+      }
       return res.json();
     });
   }
@@ -166,8 +176,8 @@ var IdentityVerificationCDN = (() => {
     const script = document.currentScript;
     return {
       apiKey: (script == null ? void 0 : script.dataset.apiKey) || "",
-      successURL: (script == null ? void 0 : script.dataset.successUrl) || "",
-      failureURL: (script == null ? void 0 : script.dataset.failureUrl) || "",
+      successRedirectURL: (script == null ? void 0 : script.dataset.successUrl) || "",
+      failRedirectURL: (script == null ? void 0 : script.dataset.failureUrl) || "",
       notificationURL: (script == null ? void 0 : script.dataset.notificationUrl) || ""
     };
   };
@@ -199,7 +209,7 @@ var IdentityVerificationCDN = (() => {
       this.pollingId = window.setInterval(() => __async(this, null, function* () {
         try {
           const url = `${BASE_API_URL}${AGE_APP_POLLING_ENDPOINT}/${sessionId}`;
-          const data = yield getRequest(url, { "x-sign-key": this.options.apiKey });
+          const data = yield getRequest(url, { [SIGN_KEY_HEADER]: this.options.apiKey });
           logData(getElement(this.options.logContainerSelector || ""), data.scanningState);
           if (data == null ? void 0 : data.scanningState) this.handleState(data.scanningState);
         } catch (err) {
@@ -256,10 +266,15 @@ var IdentityVerificationCDN = (() => {
     validateIdentityAndGenerateQRCode() {
       return __async(this, null, function* () {
         try {
-          const url = `${BASE_API_URL}${VALIDATE_IDENTITY_ENDPOINT}?token=${this.options.apiKey}`;
-          const response = yield postRequest(url, {});
+          const url = `${BASE_API_URL}${VALIDATE_IDENTITY_ENDPOINT}`;
+          const response = yield postRequest(url, {
+            token: this.options.apiKey,
+            successNavigateUrl: this.options.successRedirectURL,
+            failureNavigateUrl: this.options.failRedirectURL,
+            notificationUrl: this.options.notificationURL
+          });
           if (!response.status || !response.data) throw new Error("Invalid identity");
-          const { contextType, entityId, orgId, id } = response.data;
+          const { contextType, entityId, orgId } = response.data;
           switch (contextType) {
             case CONTEXT_TYPES.AGE_APP:
               yield this.generateAgeAppQRCode(entityId, orgId);
@@ -278,12 +293,12 @@ var IdentityVerificationCDN = (() => {
     generateAgeAppQRCode(eventId, orgId) {
       return __async(this, null, function* () {
         try {
-          const url = `${BASE_API_URL}${AGE_APP_QR_GENERATION_ENDPOINT}/${eventId}`;
+          const url = `${BASE_API_URL}${AGE_APP_QR_GENERATION_ENDPOINT}/${eventId}?notificationURL=${this.options.notificationURL}`;
           const data = yield getRequest(url, { [SIGN_KEY_HEADER]: this.options.apiKey, [ORG_ID_HEADER]: orgId });
           this.displayQRCode(data.qrCodeUrl, data.deepLink);
           this.startPolling(data.sessionId);
         } catch (err) {
-          errorLog("Failed to generate QR code:", err);
+          errorLog("Failed to generate Age App QR code:", err);
         }
       });
     }
@@ -291,16 +306,17 @@ var IdentityVerificationCDN = (() => {
 
   // src/main.ts
   (() => {
-    const { apiKey, successURL, failureURL, notificationURL } = extractQueryParams();
-    infoLog({ apiKey, successURL, failureURL, notificationURL });
+    const { apiKey, successRedirectURL, failRedirectURL, notificationURL } = extractQueryParams();
+    infoLog({ apiKey, successRedirectURL, failRedirectURL, notificationURL });
     if (!apiKey) return errorLog("Missing 'apiKey' in script tag. Example usage: <script src='...main.js data-api-key=your-api-key'>");
     const verifier = new IdentityVerifier();
     verifier.configure({
       apiKey,
       qrContainerSelector: QR_CONTAINER_SELECTOR,
       logContainerSelector: LOG_CONTAINER_SELECTOR,
-      successRedirectURL: successURL,
-      failRedirectURL: failureURL
+      successRedirectURL,
+      failRedirectURL,
+      notificationURL
     });
     verifier.validateIdentityAndGenerateQRCode();
   })();

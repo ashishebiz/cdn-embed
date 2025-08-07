@@ -22,8 +22,8 @@ export const extractQueryParams = () => {
 
   return {
     apiKey: script?.dataset.apiKey || "",
-    successURL: script?.dataset.successUrl || "",
-    failureURL: script?.dataset.failureUrl || "",
+    successRedirectURL: script?.dataset.successUrl || "",
+    failRedirectURL: script?.dataset.failureUrl || "",
     notificationURL: script?.dataset.notificationUrl || "",
   };
 };
