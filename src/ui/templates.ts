@@ -67,3 +67,28 @@ export const showErrorMessageHTML = (message: string = "Something went wrong") =
   `<div style="background:#111;color:#fff;padding:10px 14px;border-radius:6px;font-size:14px;">${message}</div>`;
 
 export const locationMessageHTML = `<div style="background:#111;color:#fff;padding:10px 14px;border-radius:6px;font-size:14px;">Location permission denied. Please enable it manually in browser settings and refresh this page.</div>`;
+
+export function renderQRCodeHTML(qrCodeUrl: string, deepLink: string): string {
+  document.getElementById("qr-code")?.addEventListener("click", () => window.open(deepLink, "_blank"));
+  return `
+    <div id="qr-code" class="w-100 h-100" style="cursor:pointer;text-align:center;">
+      <img src="${qrCodeUrl}" alt="QR Code" style="width:100%;height:100%;" />
+    </div>
+    `;
+}
+
+export function renderStateMessageHTML(state: VerificationState): string {
+  const html = getMessageHTML(state);
+  return `
+    <div style="
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      flex-direction: column;">
+      ${html}
+    </div>
+  `;
+}

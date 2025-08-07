@@ -154,6 +154,30 @@ var IdentityVerificationCDN = (() => {
     return messages[state];
   };
   var showErrorMessageHTML = (message = "Something went wrong") => `<div style="background:#111;color:#fff;padding:10px 14px;border-radius:6px;font-size:14px;">${message}</div>`;
+  function renderQRCodeHTML(qrCodeUrl, deepLink) {
+    var _a;
+    (_a = document.getElementById("qr-code")) == null ? void 0 : _a.addEventListener("click", () => window.open(deepLink, "_blank"));
+    return `
+    <div id="qr-code" class="w-100 h-100" style="cursor:pointer;text-align:center;">
+      <img src="${qrCodeUrl}" alt="QR Code" style="width:100%;height:100%;" />
+    </div>
+    `;
+  }
+  function renderStateMessageHTML(state) {
+    const html = getMessageHTML(state);
+    return `
+    <div style="
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      flex-direction: column;">
+      ${html}
+    </div>
+  `;
+  }
 
   // src/helpers/dom.helper.ts
   var getElement = (selector) => document.querySelector(selector);
@@ -238,32 +262,37 @@ var IdentityVerificationCDN = (() => {
     configure(options) {
       this.options = options;
     }
+    clearPolling() {
+      if (this.pollingId !== null) {
+        clearInterval(this.pollingId);
+        this.pollingId = null;
+      }
+    }
     displayQRCode(qrCodeUrl, deepLink) {
-      var _a;
       this.qrContainer = getElement(this.options.qrContainerSelector);
       if (!this.qrContainer) {
         errorLog("QR Container not found");
-        this.pollingId && clearInterval(this.pollingId);
+        this.clearPolling();
         return;
       }
-      this.qrContainer.innerHTML = `<div id="qr-code" class="w-100 h-100" style="cursor:pointer;text-align:center;">
-      <img src="${qrCodeUrl}" alt="QR Code" style="width:100%;height:100%;" /></div>`;
-      (_a = document.getElementById("qr-code")) == null ? void 0 : _a.addEventListener("click", () => window.open(deepLink, "_blank"));
+      this.qrContainer.innerHTML = renderQRCodeHTML(qrCodeUrl, deepLink);
     }
     startPolling(sessionId) {
-      this.pollingId && clearInterval(this.pollingId);
+      this.clearPolling();
       if (!sessionId) throw new Error("Session ID not found");
       this.pollingId = window.setInterval(() => __async(this, null, function* () {
         try {
           const url = `${BASE_API_URL}${AGE_APP_POLLING_ENDPOINT}/${sessionId}`;
-          const data = yield getRequest(url, { [SIGN_KEY_HEADER]: this.options.apiKey });
+          const data = yield getRequest(url, {
+            [SIGN_KEY_HEADER]: this.options.apiKey
+          });
           logData(getElement(this.options.logContainerSelector || ""), data.scanningState);
           if (data == null ? void 0 : data.scanningState) yield this.handleState(data.scanningState);
         } catch (err) {
           if (this.qrContainer) this.qrContainer.innerHTML = showErrorMessageHTML();
           errorLog("Polling error", err);
           yield this.handleState(STATES.Timeout);
-          this.pollingId && clearInterval(this.pollingId);
+          this.clearPolling();
         }
       }), POLLING_INTERVAL);
     }
@@ -272,20 +301,12 @@ var IdentityVerificationCDN = (() => {
         var _a;
         const cb = this.options;
         if (!cb.qrContainerSelector) {
-          errorLog("QR Container not found");
-          this.pollingId && clearInterval(this.pollingId);
+          errorLog("QR Container selector not provided");
+          this.clearPolling();
+          return;
         }
-        const html = getMessageHTML(state);
         if (this.qrContainer && state !== STATES.WaitingForScan) {
-          this.qrContainer.innerHTML = `<div  style="
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        flex-direction: column;
-        ">${html}</div>`;
+          this.qrContainer.innerHTML = renderStateMessageHTML(state);
         }
         switch (state) {
           case STATES.WaitingForScan:
@@ -293,26 +314,29 @@ var IdentityVerificationCDN = (() => {
             infoLog(state);
             break;
           case STATES.Approved:
+            this.clearPolling();
             if (cb.successRedirectURL) redirectWithDelay(cb.successRedirectURL, REDIRECT_DELAY);
             break;
           case STATES.Timeout:
-            infoLog(this.options);
+            infoLog(cb);
+            this.clearPolling();
             (_a = document.getElementById("new-qr-button")) == null ? void 0 : _a.addEventListener("click", () => this.validateIdentityAndGenerateQRCode());
-            this.pollingId && clearInterval(this.pollingId);
             break;
           case STATES.SomethingWentWrong:
+            this.clearPolling();
             if (cb.failRedirectURL) {
               redirectWithDelay(cb.failRedirectURL, REDIRECT_DELAY);
             }
-            this.pollingId && clearInterval(this.pollingId);
+            break;
           case STATES.RejectedByUser:
           case STATES.RejectedByRequirement:
+            this.clearPolling();
             yield sleep(10);
-            this.validateIdentityAndGenerateQRCode();
+            yield this.validateIdentityAndGenerateQRCode();
             break;
           default:
             errorLog("Invalid state:", state);
-            this.pollingId && clearInterval(this.pollingId);
+            this.clearPolling();
             break;
         }
       });
@@ -329,7 +353,9 @@ var IdentityVerificationCDN = (() => {
             failureNavigateUrl: this.options.failRedirectURL,
             notificationUrl: this.options.notificationURL
           });
-          if (!response.status || !response.data) throw new Error("Invalid identity");
+          if (!response.status || !response.data) {
+            throw new Error("Invalid identity");
+          }
           const { contextType, entityId, orgId } = response.data;
           switch (contextType) {
             case CONTEXT_TYPES.AGE_APP:
@@ -341,6 +367,7 @@ var IdentityVerificationCDN = (() => {
           }
           return;
         } catch (err) {
+          if (this.qrContainer) this.qrContainer.innerHTML = showErrorMessageHTML();
           errorLog("Failed to generate QR code:", err);
         }
       });
@@ -350,7 +377,10 @@ var IdentityVerificationCDN = (() => {
         var _a, _b;
         try {
           const url = `${BASE_API_URL}${AGE_APP_QR_GENERATION_ENDPOINT}/${eventId}?notificationURL=${this.options.notificationURL}&latitude=${(_a = this.location) == null ? void 0 : _a.latitude}&longitude=${(_b = this.location) == null ? void 0 : _b.longitude}`;
-          const data = yield getRequest(url, { [SIGN_KEY_HEADER]: this.options.apiKey, [ORG_ID_HEADER]: orgId });
+          const data = yield getRequest(url, {
+            [SIGN_KEY_HEADER]: this.options.apiKey,
+            [ORG_ID_HEADER]: orgId
+          });
           this.displayQRCode(data.qrCodeUrl, data.deepLink);
           this.startPolling(data.sessionId);
           infoLog("QR code generated successfully");
