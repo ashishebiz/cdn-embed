@@ -10,7 +10,7 @@ import {
   CONTEXT_TYPES,
   AGE_APP_QR_GENERATION_ENDPOINT,
 } from "../constants";
-import { errorLog, getElement, getGeolocation, infoLog, logData, redirectWithDelay } from "../helpers";
+import { errorLog, getElement, getGeolocation, infoLog, logData, redirectWithDelay, sleep } from "../helpers";
 import { IGeolocation, IVerificationOptions, VerificationState } from "../types";
 import { getMessageHTML, showErrorMessageHTML } from "../ui";
 import { getRequest, postRequest } from "./request";
@@ -48,17 +48,17 @@ export class IdentityVerifier {
         const data = await getRequest(url, { [SIGN_KEY_HEADER]: this.options.apiKey });
 
         logData(getElement(this.options.logContainerSelector || ""), data.scanningState);
-        if (data?.scanningState) this.handleState(data.scanningState);
+        if (data?.scanningState) await this.handleState(data.scanningState);
       } catch (err) {
         if (this.qrContainer) this.qrContainer.innerHTML = showErrorMessageHTML();
         errorLog("Polling error", err);
-        this.handleState(STATES.Timeout);
+        await this.handleState(STATES.Timeout);
         this.pollingId && clearInterval(this.pollingId);
       }
     }, POLLING_INTERVAL);
   }
 
-  private handleState(state: VerificationState) {
+  private async handleState(state: VerificationState) {
     const cb: IVerificationOptions = this.options;
     if (!cb.qrContainerSelector) {
       errorLog("QR Container not found");
@@ -81,6 +81,7 @@ export class IdentityVerifier {
     switch (state) {
       case STATES.WaitingForScan:
       case STATES.Scanned:
+        infoLog(state);
         break;
       case STATES.Approved:
         if (cb.successRedirectURL) redirectWithDelay(cb.successRedirectURL, REDIRECT_DELAY);
@@ -99,6 +100,9 @@ export class IdentityVerifier {
 
       case STATES.RejectedByUser:
       case STATES.RejectedByRequirement:
+        await sleep(10);
+        this.validateIdentityAndGenerateQRCode();
+        break;
       default:
         errorLog("Invalid state:", state);
         this.pollingId && clearInterval(this.pollingId);

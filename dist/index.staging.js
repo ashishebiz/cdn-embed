@@ -175,6 +175,10 @@ var IdentityVerificationCDN = (() => {
       window.location.href = url;
     }, delay);
   };
+  var sleep = (seconds) => {
+    const ms = seconds * 1e3;
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  };
   var extractQueryParams = () => {
     const script = document.currentScript;
     return {
@@ -258,25 +262,26 @@ var IdentityVerificationCDN = (() => {
           const url = `${BASE_API_URL}${AGE_APP_POLLING_ENDPOINT}/${sessionId}`;
           const data = yield getRequest(url, { [SIGN_KEY_HEADER]: this.options.apiKey });
           logData(getElement(this.options.logContainerSelector || ""), data.scanningState);
-          if (data == null ? void 0 : data.scanningState) this.handleState(data.scanningState);
+          if (data == null ? void 0 : data.scanningState) yield this.handleState(data.scanningState);
         } catch (err) {
           if (this.qrContainer) this.qrContainer.innerHTML = showErrorMessageHTML();
           errorLog("Polling error", err);
-          this.handleState(STATES.Timeout);
+          yield this.handleState(STATES.Timeout);
           this.pollingId && clearInterval(this.pollingId);
         }
       }), POLLING_INTERVAL);
     }
     handleState(state) {
-      var _a;
-      const cb = this.options;
-      if (!cb.qrContainerSelector) {
-        errorLog("QR Container not found");
-        this.pollingId && clearInterval(this.pollingId);
-      }
-      const html = getMessageHTML(state);
-      if (this.qrContainer && state !== STATES.WaitingForScan) {
-        this.qrContainer.innerHTML = `<div  style="
+      return __async(this, null, function* () {
+        var _a;
+        const cb = this.options;
+        if (!cb.qrContainerSelector) {
+          errorLog("QR Container not found");
+          this.pollingId && clearInterval(this.pollingId);
+        }
+        const html = getMessageHTML(state);
+        if (this.qrContainer && state !== STATES.WaitingForScan) {
+          this.qrContainer.innerHTML = `<div  style="
         width: 100%;
         height: 100%;
         display: flex;
@@ -285,31 +290,36 @@ var IdentityVerificationCDN = (() => {
         text-align: center;
         flex-direction: column;
         ">${html}</div>`;
-      }
-      switch (state) {
-        case STATES.WaitingForScan:
-        case STATES.Scanned:
-          break;
-        case STATES.Approved:
-          if (cb.successRedirectURL) redirectWithDelay(cb.successRedirectURL, REDIRECT_DELAY);
-          break;
-        case STATES.Timeout:
-          infoLog(this.options);
-          (_a = document.getElementById("new-qr-button")) == null ? void 0 : _a.addEventListener("click", () => this.validateIdentityAndGenerateQRCode());
-          this.pollingId && clearInterval(this.pollingId);
-          break;
-        case STATES.SomethingWentWrong:
-          if (cb.failRedirectURL) {
-            redirectWithDelay(cb.failRedirectURL, REDIRECT_DELAY);
-          }
-          this.pollingId && clearInterval(this.pollingId);
-        case STATES.RejectedByUser:
-        case STATES.RejectedByRequirement:
-        default:
-          errorLog("Invalid state:", state);
-          this.pollingId && clearInterval(this.pollingId);
-          break;
-      }
+        }
+        switch (state) {
+          case STATES.WaitingForScan:
+          case STATES.Scanned:
+            infoLog(state);
+            break;
+          case STATES.Approved:
+            if (cb.successRedirectURL) redirectWithDelay(cb.successRedirectURL, REDIRECT_DELAY);
+            break;
+          case STATES.Timeout:
+            infoLog(this.options);
+            (_a = document.getElementById("new-qr-button")) == null ? void 0 : _a.addEventListener("click", () => this.validateIdentityAndGenerateQRCode());
+            this.pollingId && clearInterval(this.pollingId);
+            break;
+          case STATES.SomethingWentWrong:
+            if (cb.failRedirectURL) {
+              redirectWithDelay(cb.failRedirectURL, REDIRECT_DELAY);
+            }
+            this.pollingId && clearInterval(this.pollingId);
+          case STATES.RejectedByUser:
+          case STATES.RejectedByRequirement:
+            yield sleep(10);
+            this.validateIdentityAndGenerateQRCode();
+            break;
+          default:
+            errorLog("Invalid state:", state);
+            this.pollingId && clearInterval(this.pollingId);
+            break;
+        }
+      });
     }
     validateIdentityAndGenerateQRCode() {
       return __async(this, null, function* () {
