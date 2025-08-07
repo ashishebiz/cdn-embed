@@ -62,3 +62,8 @@ export const getLogMessageHTML = (state: VerificationState): string => {
   };
   return messages[state];
 };
+
+export const showErrorMessageHTML = (message: string = "Something went wrong") =>
+  `<div style="background:#111;color:#fff;padding:10px 14px;border-radius:6px;font-size:14px;">${message}</div>`;
+
+export const locationMessageHTML = `<div style="background:#111;color:#fff;padding:10px 14px;border-radius:6px;font-size:14px;">Location permission denied. Please enable it manually in browser settings and refresh this page.</div>`;

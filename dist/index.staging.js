@@ -64,6 +64,8 @@ var IdentityVerificationCDN = (() => {
     RejectedByRequirement: "RejectedByRequirement",
     SomethingWentWrong: "SomethingWentWrong"
   };
+  var LocationErrorMessage = "Location permission denied. Please enable it manually in browser settings.";
+  var GeolocationNotSupportedMessage = "Geolocation is not supported by this browser";
 
   // src/api/request.ts
   function getRequest(_0) {
@@ -151,6 +153,7 @@ var IdentityVerificationCDN = (() => {
     };
     return messages[state];
   };
+  var showErrorMessageHTML = (message = "Something went wrong") => `<div style="background:#111;color:#fff;padding:10px 14px;border-radius:6px;font-size:14px;">${message}</div>`;
 
   // src/helpers/dom.helper.ts
   var getElement = (selector) => document.querySelector(selector);
@@ -181,12 +184,56 @@ var IdentityVerificationCDN = (() => {
       notificationURL: (script == null ? void 0 : script.dataset.notificationUrl) || ""
     };
   };
+  var getGeolocation = (qrContainer) => __async(null, null, function* () {
+    const permissionStatus = yield checkGeolocationPermission();
+    if (permissionStatus === "denied") {
+      if (qrContainer) qrContainer.innerHTML = showErrorMessageHTML(LocationErrorMessage);
+      throw new Error(LocationErrorMessage);
+    }
+    return new Promise((res, rej) => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            var _a, _b;
+            const latitude = (_a = position.coords.latitude) != null ? _a : 0;
+            const longitude = (_b = position.coords.longitude) != null ? _b : 0;
+            res({
+              latitude,
+              longitude
+            });
+          },
+          (error) => {
+            if (qrContainer) qrContainer.innerHTML = showErrorMessageHTML(LocationErrorMessage);
+            rej(`ERR_LOC : Error getting location: ${error.message}`);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 1e4,
+            maximumAge: 0
+          }
+        );
+      } else {
+        if (qrContainer) qrContainer.innerHTML = showErrorMessageHTML(GeolocationNotSupportedMessage);
+        rej(GeolocationNotSupportedMessage);
+      }
+    });
+  });
+  var checkGeolocationPermission = () => __async(null, null, function* () {
+    if (!navigator.permissions) return "prompt";
+    try {
+      const result = yield navigator.permissions.query({ name: "geolocation" });
+      return result.state;
+    } catch (e) {
+      return "prompt";
+    }
+  });
 
   // src/api/verify.ts
   var IdentityVerifier = class {
     constructor() {
       this.pollingId = null;
       this.qrContainer = null;
+      this.location = null;
     }
     configure(options) {
       this.options = options;
@@ -213,6 +260,7 @@ var IdentityVerificationCDN = (() => {
           logData(getElement(this.options.logContainerSelector || ""), data.scanningState);
           if (data == null ? void 0 : data.scanningState) this.handleState(data.scanningState);
         } catch (err) {
+          if (this.qrContainer) this.qrContainer.innerHTML = showErrorMessageHTML();
           errorLog("Polling error", err);
           this.handleState(STATES.Timeout);
           this.pollingId && clearInterval(this.pollingId);
@@ -266,6 +314,8 @@ var IdentityVerificationCDN = (() => {
     validateIdentityAndGenerateQRCode() {
       return __async(this, null, function* () {
         try {
+          this.qrContainer = getElement(this.options.qrContainerSelector);
+          this.location = yield getGeolocation(this.qrContainer);
           const url = `${BASE_API_URL}${VALIDATE_IDENTITY_ENDPOINT}`;
           const response = yield postRequest(url, {
             token: this.options.apiKey,
@@ -278,7 +328,6 @@ var IdentityVerificationCDN = (() => {
           switch (contextType) {
             case CONTEXT_TYPES.AGE_APP:
               yield this.generateAgeAppQRCode(entityId, orgId);
-              infoLog("QR code generated successfully");
               break;
             default:
               errorLog("Unknown context type");
@@ -292,12 +341,15 @@ var IdentityVerificationCDN = (() => {
     }
     generateAgeAppQRCode(eventId, orgId) {
       return __async(this, null, function* () {
+        var _a, _b;
         try {
-          const url = `${BASE_API_URL}${AGE_APP_QR_GENERATION_ENDPOINT}/${eventId}?notificationURL=${this.options.notificationURL}`;
+          const url = `${BASE_API_URL}${AGE_APP_QR_GENERATION_ENDPOINT}/${eventId}?notificationURL=${this.options.notificationURL}&latitude=${(_a = this.location) == null ? void 0 : _a.latitude}&longitude=${(_b = this.location) == null ? void 0 : _b.longitude}`;
           const data = yield getRequest(url, { [SIGN_KEY_HEADER]: this.options.apiKey, [ORG_ID_HEADER]: orgId });
           this.displayQRCode(data.qrCodeUrl, data.deepLink);
           this.startPolling(data.sessionId);
+          infoLog("QR code generated successfully");
         } catch (err) {
+          if (this.qrContainer) this.qrContainer.innerHTML = showErrorMessageHTML();
           errorLog("Failed to generate Age App QR code:", err);
         }
       });

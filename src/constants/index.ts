@@ -29,3 +29,6 @@ export const STATES = {
   RejectedByRequirement: "RejectedByRequirement",
   SomethingWentWrong: "SomethingWentWrong",
 } as const;
+
+export const LocationErrorMessage = "Location permission denied. Please enable it manually in browser settings.";
+export const GeolocationNotSupportedMessage = "Geolocation is not supported by this browser";

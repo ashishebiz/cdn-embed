@@ -10,17 +10,18 @@ import {
   CONTEXT_TYPES,
   AGE_APP_QR_GENERATION_ENDPOINT,
 } from "../constants";
-import { errorLog, getElement, infoLog, logData, redirectWithDelay } from "../helpers";
-import { VerificationOptions, VerificationState } from "../types";
-import { getMessageHTML } from "../ui";
+import { errorLog, getElement, getGeolocation, infoLog, logData, redirectWithDelay } from "../helpers";
+import { IGeolocation, IVerificationOptions, VerificationState } from "../types";
+import { getMessageHTML, showErrorMessageHTML } from "../ui";
 import { getRequest, postRequest } from "./request";
 
 export class IdentityVerifier {
-  private options!: VerificationOptions;
+  private options!: IVerificationOptions;
   private pollingId: number | null = null;
   private qrContainer: HTMLElement | null = null;
+  private location: IGeolocation | null = null;
 
-  configure(options: VerificationOptions) {
+  configure(options: IVerificationOptions) {
     this.options = options;
   }
 
@@ -49,6 +50,7 @@ export class IdentityVerifier {
         logData(getElement(this.options.logContainerSelector || ""), data.scanningState);
         if (data?.scanningState) this.handleState(data.scanningState);
       } catch (err) {
+        if (this.qrContainer) this.qrContainer.innerHTML = showErrorMessageHTML();
         errorLog("Polling error", err);
         this.handleState(STATES.Timeout);
         this.pollingId && clearInterval(this.pollingId);
@@ -57,7 +59,7 @@ export class IdentityVerifier {
   }
 
   private handleState(state: VerificationState) {
-    const cb: VerificationOptions = this.options;
+    const cb: IVerificationOptions = this.options;
     if (!cb.qrContainerSelector) {
       errorLog("QR Container not found");
       this.pollingId && clearInterval(this.pollingId);
@@ -106,6 +108,10 @@ export class IdentityVerifier {
 
   async validateIdentityAndGenerateQRCode() {
     try {
+      this.qrContainer = getElement(this.options.qrContainerSelector);
+
+      this.location = await getGeolocation(this.qrContainer);
+
       const url = `${BASE_API_URL}${VALIDATE_IDENTITY_ENDPOINT}`;
       const response = await postRequest(url, {
         token: this.options.apiKey,
@@ -120,7 +126,6 @@ export class IdentityVerifier {
       switch (contextType) {
         case CONTEXT_TYPES.AGE_APP:
           await this.generateAgeAppQRCode(entityId, orgId);
-          infoLog("QR code generated successfully");
           break;
         default:
           errorLog("Unknown context type");
@@ -135,11 +140,14 @@ export class IdentityVerifier {
 
   async generateAgeAppQRCode(eventId: string, orgId: string) {
     try {
-      const url = `${BASE_API_URL}${AGE_APP_QR_GENERATION_ENDPOINT}/${eventId}?notificationURL=${this.options.notificationURL}`;
+      const url = `${BASE_API_URL}${AGE_APP_QR_GENERATION_ENDPOINT}/${eventId}?notificationURL=${this.options.notificationURL}&latitude=${this.location?.latitude}&longitude=${this.location?.longitude}`;
+
       const data = await getRequest(url, { [SIGN_KEY_HEADER]: this.options.apiKey, [ORG_ID_HEADER]: orgId });
       this.displayQRCode(data.qrCodeUrl, data.deepLink);
       this.startPolling(data.sessionId);
+      infoLog("QR code generated successfully");
     } catch (err) {
+      if (this.qrContainer) this.qrContainer.innerHTML = showErrorMessageHTML();
       errorLog("Failed to generate Age App QR code:", err);
     }
   }

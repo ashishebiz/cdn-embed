@@ -2,14 +2,7 @@
 
 export type VerificationState = keyof typeof import("../constants").STATES;
 
-export interface QRModuleOptions {
-  qrCodeSelector: string;
-  generateQRCodeFunction: () => void;
-  successRedirectURL?: string;
-  failRedirectURL?: string;
-}
-
-export interface VerificationOptions {
+export interface IVerificationOptions {
   apiKey: string;
   qrContainerSelector: string;
   logContainerSelector?: string;
@@ -17,4 +10,9 @@ export interface VerificationOptions {
   successRedirectURL?: string;
   failRedirectURL?: string;
   notificationURL?: string;
+}
+
+export interface IGeolocation {
+  latitude: number;
+  longitude: number;
 }

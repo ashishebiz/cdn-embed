@@ -1,5 +1,5 @@
 import { VerificationState } from "../types";
-import { getLogMessageHTML, getMessageHTML } from "../ui";
+import { getLogMessageHTML } from "../ui";
 
 export const getElement = (selector: string) => document.querySelector<HTMLElement>(selector);
 
