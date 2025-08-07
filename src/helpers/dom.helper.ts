@@ -15,4 +15,4 @@ export function logData(container: HTMLElement | null, state: VerificationState)
   container.prepend(p);
 }
 
-export const delayRedirect = (url: string, delay = 10000) => setTimeout(() => (window.location.href = url), delay);
+export const redirectWithDelay = (url: string, delay: number) => setTimeout(() => (window.location.href = url), delay);

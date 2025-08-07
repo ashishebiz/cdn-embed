@@ -2,29 +2,10 @@ import { GeolocationNotSupportedMessage, LocationErrorMessage } from "../constan
 import { IGeolocation } from "../types";
 import { showErrorMessageHTML } from "../ui";
 
-export const redirectWithDelay = (url: string, delay: number): void => {
-  setTimeout(() => {
-    window.location.href = url;
-  }, delay);
-};
-
 export const sleep = (seconds: number): Promise<void> => {
   const ms = seconds * 1000;
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
-
-// export const extractQueryParams = () => {
-//   const script = document.currentScript as HTMLScriptElement;
-//   const src = script?.src || "";
-//   const params = new URL(src).searchParams;
-
-//   return {
-//     apiKey: params.get("apiKey") || "",
-//     successURL: params.get("successURL") || "",
-//     failureURL: params.get("failureURL") || "",
-//     notificationURL: params.get("notificationURL") || "",
-//   };
-// };
 
 export const extractQueryParams = () => {
   const script = document.currentScript as HTMLScriptElement;

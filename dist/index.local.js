@@ -164,17 +164,13 @@ var IdentityVerificationCDN = (() => {
     p.style.cssText = "margin-bottom:10px;padding:8px;";
     container.prepend(p);
   }
+  var redirectWithDelay = (url, delay) => setTimeout(() => window.location.href = url, delay);
 
   // src/helpers/log.helper.ts
   var infoLog = (...args) => console.log("[cdn-embed]", ...args);
   var errorLog = (...args) => console.error("[cdn-embed]", ...args);
 
   // src/helpers/utils.ts
-  var redirectWithDelay = (url, delay) => {
-    setTimeout(() => {
-      window.location.href = url;
-    }, delay);
-  };
   var sleep = (seconds) => {
     const ms = seconds * 1e3;
     return new Promise((resolve) => setTimeout(resolve, ms));
