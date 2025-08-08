@@ -154,9 +154,7 @@ var IdentityVerificationCDN = (() => {
     return messages[state];
   };
   var showErrorMessageHTML = (message = "Something went wrong") => `<div style="background:#111;color:#fff;padding:10px 14px;border-radius:6px;font-size:14px;">${message}</div>`;
-  function renderQRCodeHTML(qrCodeUrl, deepLink) {
-    var _a;
-    (_a = document.getElementById("qr-code")) == null ? void 0 : _a.addEventListener("click", () => window.open(deepLink, "_blank"));
+  function renderQRCodeHTML(qrCodeUrl) {
     return `
     <div id="qr-code" class="w-100 h-100" style="cursor:pointer;text-align:center;">
       <img src="${qrCodeUrl}" alt="QR Code" style="width:100%;height:100%;" />
@@ -269,13 +267,15 @@ var IdentityVerificationCDN = (() => {
       }
     }
     displayQRCode(qrCodeUrl, deepLink) {
+      var _a;
       this.qrContainer = getElement(this.options.qrContainerSelector);
       if (!this.qrContainer) {
         errorLog("QR Container not found");
         this.clearPolling();
         return;
       }
-      this.qrContainer.innerHTML = renderQRCodeHTML(qrCodeUrl, deepLink);
+      this.qrContainer.innerHTML = renderQRCodeHTML(qrCodeUrl);
+      (_a = document.getElementById("qr-code")) == null ? void 0 : _a.addEventListener("click", () => window.open(deepLink, "_blank"));
     }
     startPolling(sessionId) {
       this.clearPolling();

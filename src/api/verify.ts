@@ -41,7 +41,8 @@ export class IdentityVerifier {
       return;
     }
 
-    this.qrContainer.innerHTML = renderQRCodeHTML(qrCodeUrl, deepLink);
+    this.qrContainer.innerHTML = renderQRCodeHTML(qrCodeUrl);
+    document.getElementById("qr-code")?.addEventListener("click", () => window.open(deepLink, "_blank"));
   }
 
   private startPolling(sessionId: string) {
