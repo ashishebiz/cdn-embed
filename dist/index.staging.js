@@ -67,36 +67,6 @@ var IdentityVerificationCDN = (() => {
   var LocationErrorMessage = "Location permission denied. Please enable it manually in browser settings.";
   var GeolocationNotSupportedMessage = "Geolocation is not supported by this browser";
 
-  // src/api/request.ts
-  function getRequest(_0) {
-    return __async(this, arguments, function* (url, headers = {}) {
-      var _a;
-      const res = yield fetch(url, { method: "GET", headers });
-      if (!res.ok) {
-        const message = (_a = yield res.json()) == null ? void 0 : _a.message;
-        alert(message);
-        throw new Error(`${res.status} : ${message}`);
-      }
-      return res.json();
-    });
-  }
-  function postRequest(_0, _1) {
-    return __async(this, arguments, function* (url, body, headers = {}) {
-      var _a;
-      const res = yield fetch(url, {
-        method: "POST",
-        headers: __spreadValues(__spreadValues({}, DEFAULT_HEADERS), headers),
-        body: JSON.stringify(body)
-      });
-      if (!res.ok) {
-        const message = (_a = yield res.json()) == null ? void 0 : _a.message;
-        alert(message);
-        throw new Error(`${res.status} : ${message}`);
-      }
-      return res.json();
-    });
-  }
-
   // src/ui/templates.ts
   var getMessageHTML = (state) => {
     const messages = {
@@ -130,10 +100,7 @@ var IdentityVerificationCDN = (() => {
     <div style="font-size: 30px; margin-bottom: 10px;">\u274C</div>
     <div style="color: #ff4444;">Access Denied</div>
   `,
-      WaitingForScan: `
-    <div style="font-size: 30px; margin-bottom: 10px;">\u{1F4F7}</div>
-    <div style="color: #fff;">Waiting for scan...</div>
-  `,
+      WaitingForScan: "",
       SomethingWentWrong: `
     <div style="font-size: 30px; margin-bottom: 10px;">\u26A0\uFE0F</div>
     <div style="color: #ff4444;">Something went wrong</div>
@@ -210,6 +177,7 @@ var IdentityVerificationCDN = (() => {
     const permissionStatus = yield checkGeolocationPermission();
     if (permissionStatus === "denied") {
       if (qrContainer) qrContainer.innerHTML = showErrorMessageHTML(LocationErrorMessage);
+      alert(LocationErrorMessage);
       throw new Error(LocationErrorMessage);
     }
     return new Promise((res, rej) => {
@@ -249,13 +217,43 @@ var IdentityVerificationCDN = (() => {
       return "prompt";
     }
   });
+  function getRequest(_0) {
+    return __async(this, arguments, function* (url, headers = {}) {
+      var _a;
+      const res = yield fetch(url, { method: "GET", headers });
+      if (!res.ok) {
+        const message = (_a = yield res.json()) == null ? void 0 : _a.message;
+        alert("Something Went Wrong");
+        throw new Error(`${res.status} : ${message}`);
+      }
+      return res.json();
+    });
+  }
+  function postRequest(_0, _1) {
+    return __async(this, arguments, function* (url, body, headers = {}) {
+      var _a;
+      const res = yield fetch(url, {
+        method: "POST",
+        headers: __spreadValues(__spreadValues({}, DEFAULT_HEADERS), headers),
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        const message = (_a = yield res.json()) == null ? void 0 : _a.message;
+        alert("Something Went Wrong");
+        throw new Error(`${res.status} : ${message}`);
+      }
+      return res.json();
+    });
+  }
 
   // src/api/verify.ts
   var IdentityVerifier = class {
-    constructor() {
+    constructor(apiKey) {
       this.pollingId = null;
       this.qrContainer = null;
       this.location = null;
+      this.apiKey = "";
+      this.apiKey = apiKey;
     }
     configure(options) {
       this.options = options;
@@ -284,7 +282,7 @@ var IdentityVerificationCDN = (() => {
         try {
           const url = `${BASE_API_URL}${AGE_APP_POLLING_ENDPOINT}/${sessionId}`;
           const data = yield getRequest(url, {
-            [SIGN_KEY_HEADER]: this.options.apiKey
+            [SIGN_KEY_HEADER]: this.apiKey
           });
           logData(getElement(this.options.logContainerSelector || ""), data.scanningState);
           if (data == null ? void 0 : data.scanningState) yield this.handleState(data.scanningState);
@@ -310,6 +308,7 @@ var IdentityVerificationCDN = (() => {
         }
         switch (state) {
           case STATES.WaitingForScan:
+            return;
           case STATES.Scanned:
             infoLog(state);
             break;
@@ -348,7 +347,7 @@ var IdentityVerificationCDN = (() => {
           this.location = yield getGeolocation(this.qrContainer);
           const url = `${BASE_API_URL}${VALIDATE_IDENTITY_ENDPOINT}`;
           const response = yield postRequest(url, {
-            token: this.options.apiKey,
+            token: this.apiKey,
             successNavigateUrl: this.options.successRedirectURL,
             failureNavigateUrl: this.options.failRedirectURL,
             notificationUrl: this.options.notificationURL
@@ -378,7 +377,7 @@ var IdentityVerificationCDN = (() => {
         try {
           const url = `${BASE_API_URL}${AGE_APP_QR_GENERATION_ENDPOINT}/${eventId}?notificationURL=${this.options.notificationURL}&latitude=${(_a = this.location) == null ? void 0 : _a.latitude}&longitude=${(_b = this.location) == null ? void 0 : _b.longitude}`;
           const data = yield getRequest(url, {
-            [SIGN_KEY_HEADER]: this.options.apiKey,
+            [SIGN_KEY_HEADER]: this.apiKey,
             [ORG_ID_HEADER]: orgId
           });
           this.displayQRCode(data.qrCodeUrl, data.deepLink);
@@ -392,20 +391,71 @@ var IdentityVerificationCDN = (() => {
     }
   };
 
+  // src/api/callback.modules.ts
+  var callbackModule = /* @__PURE__ */ (() => {
+    let container = null;
+    let generateQRCode;
+    let successURL = "";
+    let failURL = "";
+    function setOptions(options) {
+      container = document.querySelector(options.qrCodeSelector);
+      if (!container) return;
+      generateQRCode = options.generateQRCodeFunction;
+      successURL = options.successRedirectURL || "";
+      failURL = options.failRedirectURL || "";
+    }
+    function handleState(state) {
+      var _a;
+      if (!container) return;
+      const html = getMessageHTML(state);
+      container.innerHTML = `<div class='w-100 h-100 align-content-center'>${html}</div>`;
+      if (state === STATES.Timeout && generateQRCode) {
+        (_a = document.getElementById("new-qr-button")) == null ? void 0 : _a.addEventListener("click", generateQRCode);
+      }
+      if (state === STATES.Approved && successURL) {
+        redirectWithDelay(successURL, REDIRECT_DELAY);
+      }
+      if ((state === STATES.RejectedByUser || state === STATES.RejectedByRequirement) && failURL) {
+        redirectWithDelay(failURL, REDIRECT_DELAY);
+      }
+      if (state === STATES.SomethingWentWrong && failURL) {
+        redirectWithDelay(failURL, REDIRECT_DELAY);
+      }
+    }
+    return {
+      setOptions,
+      handleState,
+      STATES
+    };
+  })();
+
   // src/main.ts
   (() => {
     const { apiKey, successRedirectURL, failRedirectURL, notificationURL } = extractQueryParams();
     infoLog({ apiKey, successRedirectURL, failRedirectURL, notificationURL });
     if (!apiKey) return errorLog("Missing 'apiKey' in script tag. Example usage: <script src='...main.js data-api-key=your-api-key'>");
-    const verifier = new IdentityVerifier();
+    const verifier = new IdentityVerifier(apiKey);
     verifier.configure({
-      apiKey,
       qrContainerSelector: QR_CONTAINER_SELECTOR,
       logContainerSelector: LOG_CONTAINER_SELECTOR,
       successRedirectURL,
       failRedirectURL,
-      notificationURL
+      notificationURL,
+      onVerificationWaitingForScan: () => callbackModule.handleState(callbackModule.STATES.WaitingForScan),
+      onVerificationSuccess: () => callbackModule.handleState(callbackModule.STATES.Approved),
+      onVerificationFailure: () => callbackModule.handleState(callbackModule.STATES.Timeout),
+      onVerificationScanning: () => callbackModule.handleState(callbackModule.STATES.Scanned),
+      onVerificationRejectedByUser: () => callbackModule.handleState(callbackModule.STATES.RejectedByUser),
+      onVerificationRejectedByRequirements: () => callbackModule.handleState(callbackModule.STATES.RejectedByRequirement),
+      onVerificationTimeout: () => callbackModule.handleState(callbackModule.STATES.Timeout)
     });
+    callbackModule.setOptions({
+      qrCodeSelector: QR_CONTAINER_SELECTOR,
+      generateQRCodeFunction: () => verifier.validateIdentityAndGenerateQRCode(),
+      successRedirectURL,
+      failRedirectURL
+    });
+    window["bitIdentityVerification"] = verifier;
     verifier.validateIdentityAndGenerateQRCode();
   })();
 })();

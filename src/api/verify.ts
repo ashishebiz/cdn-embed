@@ -14,16 +14,22 @@ import {
 import { errorLog, getElement, getGeolocation, infoLog, logData, redirectWithDelay, sleep } from "../helpers";
 import { IGeolocation, IVerificationOptions, VerificationState } from "../types";
 import { renderQRCodeHTML, renderStateMessageHTML, showErrorMessageHTML } from "../ui";
-import { getRequest, postRequest } from "./request";
+import { getRequest, postRequest } from "../helpers";
 
 export class IdentityVerifier {
   private options!: IVerificationOptions;
   private pollingId: number | null = null;
   private qrContainer: HTMLElement | null = null;
   private location: IGeolocation | null = null;
+  private apiKey: string  = ""
+
+  constructor(apiKey: string) {
+    this.apiKey = apiKey;
+  }
 
   configure(options: IVerificationOptions) {
     this.options = options;
+
   }
 
   private clearPolling() {
@@ -54,7 +60,7 @@ export class IdentityVerifier {
       try {
         const url = `${BASE_API_URL}${AGE_APP_POLLING_ENDPOINT}/${sessionId}`;
         const data = await getRequest(url, {
-          [SIGN_KEY_HEADER]: this.options.apiKey,
+          [SIGN_KEY_HEADER]: this.apiKey,
         });
 
         logData(getElement(this.options.logContainerSelector || ""), data.scanningState);
@@ -85,6 +91,7 @@ export class IdentityVerifier {
 
     switch (state) {
       case STATES.WaitingForScan:
+        return;
       case STATES.Scanned:
         infoLog(state);
         break;
@@ -128,7 +135,7 @@ export class IdentityVerifier {
 
       const url = `${BASE_API_URL}${VALIDATE_IDENTITY_ENDPOINT}`;
       const response = await postRequest(url, {
-        token: this.options.apiKey,
+        token: this.apiKey,
         successNavigateUrl: this.options.successRedirectURL,
         failureNavigateUrl: this.options.failRedirectURL,
         notificationUrl: this.options.notificationURL,
@@ -161,7 +168,7 @@ export class IdentityVerifier {
       const url = `${BASE_API_URL}${AGE_APP_QR_GENERATION_ENDPOINT}/${eventId}?notificationURL=${this.options.notificationURL}&latitude=${this.location?.latitude}&longitude=${this.location?.longitude}`;
 
       const data = await getRequest(url, {
-        [SIGN_KEY_HEADER]: this.options.apiKey,
+        [SIGN_KEY_HEADER]: this.apiKey,
         [ORG_ID_HEADER]: orgId,
       });
 
