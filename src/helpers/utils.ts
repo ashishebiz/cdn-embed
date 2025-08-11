@@ -1,4 +1,4 @@
-import { GeolocationNotSupportedMessage, LocationErrorMessage } from "../constants";
+import { GeolocationNotSupportedMessage, LocationErrorMessage, DEFAULT_HEADERS } from "../constants";
 import { IGeolocation } from "../types";
 import { showErrorMessageHTML } from "../ui";
 
@@ -23,6 +23,7 @@ export const getGeolocation = async (qrContainer: HTMLElement | null): Promise<I
 
   if (permissionStatus === "denied") {
     if (qrContainer) qrContainer.innerHTML = showErrorMessageHTML(LocationErrorMessage);
+    alert(LocationErrorMessage)
     throw new Error(LocationErrorMessage);
   }
 
@@ -66,3 +67,30 @@ const checkGeolocationPermission = async (): Promise<PermissionState> => {
     return "prompt";
   }
 };
+
+export async function getRequest(url: string, headers: Record<string, string> = {}) {
+  const res = await fetch(url, { method: "GET", headers });
+  if (!res.ok) {
+    const message = (await res.json())?.message;
+    alert("Something Went Wrong");
+    throw new Error(`${res.status} : ${message}`);
+  }
+  return res.json();
+}
+
+export async function postRequest(url: string, body: Record<string, unknown>, headers: Record<string, string> = {}) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...headers,
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const message = (await res.json())?.message;
+    alert("Something Went Wrong");
+    throw new Error(`${res.status} : ${message}`);
+  }
+  return res.json();
+}
