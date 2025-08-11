@@ -23,7 +23,7 @@ export const getGeolocation = async (qrContainer: HTMLElement | null): Promise<I
 
   if (permissionStatus === "denied") {
     if (qrContainer) qrContainer.innerHTML = showErrorMessageHTML(LocationErrorMessage);
-    alert(LocationErrorMessage)
+    alert(LocationErrorMessage);
     throw new Error(LocationErrorMessage);
   }
 
