@@ -24,7 +24,7 @@ declare global {
     notificationURL,
     onVerificationWaitingForScan: () => callbackModule.handleState(callbackModule.STATES.WaitingForScan),
     onVerificationSuccess: () => callbackModule.handleState(callbackModule.STATES.Approved),
-    onVerificationFailure: () => callbackModule.handleState(callbackModule.STATES.Timeout),
+    onVerificationFailure: () => callbackModule.handleState(callbackModule.STATES.SomethingWentWrong),
     onVerificationScanning: () => callbackModule.handleState(callbackModule.STATES.Scanned),
     onVerificationRejectedByUser: () => callbackModule.handleState(callbackModule.STATES.RejectedByUser),
     onVerificationRejectedByRequirements: () => callbackModule.handleState(callbackModule.STATES.RejectedByRequirement),
@@ -37,9 +37,9 @@ declare global {
     successRedirectURL,
     failRedirectURL,
   });
-  
+
   // Set it in global scope
-  window['bitIdentityVerification'] = verifier;
+  window["bitIdentityVerification"] = verifier;
 
   verifier.validateIdentityAndGenerateQRCode();
 })();

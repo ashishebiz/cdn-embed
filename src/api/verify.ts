@@ -21,7 +21,7 @@ export class IdentityVerifier {
   private pollingId: number | null = null;
   private qrContainer: HTMLElement | null = null;
   private location: IGeolocation | null = null;
-  private apiKey: string  = ""
+  private apiKey: string = "";
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
@@ -29,7 +29,6 @@ export class IdentityVerifier {
 
   configure(options: IVerificationOptions) {
     this.options = options;
-
   }
 
   private clearPolling() {
@@ -85,46 +84,26 @@ export class IdentityVerifier {
       return;
     }
 
-    if (this.qrContainer && state !== STATES.WaitingForScan) {
-      this.qrContainer.innerHTML = renderStateMessageHTML(state);
-    }
-
     switch (state) {
       case STATES.WaitingForScan:
         return;
       case STATES.Scanned:
-        infoLog(state);
-        break;
-
+        return cb.onVerificationScanning();
       case STATES.Approved:
         this.clearPolling();
-        if (cb.successRedirectURL) redirectWithDelay(cb.successRedirectURL, REDIRECT_DELAY);
-        break;
-
-      case STATES.Timeout:
-        infoLog(cb);
-        this.clearPolling();
-        document.getElementById("new-qr-button")?.addEventListener("click", () => this.validateIdentityAndGenerateQRCode());
-        break;
-
-      case STATES.SomethingWentWrong:
-        this.clearPolling();
-        if (cb.failRedirectURL) {
-          redirectWithDelay(cb.failRedirectURL, REDIRECT_DELAY);
-        }
-        break;
-
+        return cb.onVerificationSuccess();
       case STATES.RejectedByUser:
+        this.clearPolling();
+        return cb.onVerificationRejectedByUser();
       case STATES.RejectedByRequirement:
         this.clearPolling();
-        await sleep(10);
-        await this.validateIdentityAndGenerateQRCode();
-        break;
-
-      default:
-        errorLog("Invalid state:", state);
+        return cb.onVerificationRejectedByRequirements();
+      case STATES.Timeout:
         this.clearPolling();
-        break;
+        return cb.onVerificationTimeout();
+      case STATES.SomethingWentWrong:
+        this.clearPolling();
+        return cb.onVerificationFailure();
     }
   }
 
@@ -158,7 +137,6 @@ export class IdentityVerifier {
 
       return;
     } catch (err) {
-      if (this.qrContainer) this.qrContainer.innerHTML = showErrorMessageHTML();
       errorLog("Failed to generate QR code:", err);
     }
   }

@@ -6,15 +6,15 @@ import { getMessageHTML } from "../ui";
 export const callbackModule = (() => {
   let container: HTMLElement | null = null;
   let generateQRCode: () => void;
-  let successURL = "";
-  let failURL = "";
+  let successRedirectURL = "";
+  let failRedirectURL = "";
 
   function setOptions(options: QRModuleOptions) {
     container = document.querySelector(options.qrCodeSelector);
     if (!container) return;
     generateQRCode = options.generateQRCodeFunction;
-    successURL = options.successRedirectURL || "";
-    failURL = options.failRedirectURL || "";
+    successRedirectURL = options.successRedirectURL || "";
+    failRedirectURL = options.failRedirectURL || "";
   }
 
   function handleState(state: VerificationState) {
@@ -25,14 +25,14 @@ export const callbackModule = (() => {
     if (state === STATES.Timeout && generateQRCode) {
       document.getElementById("new-qr-button")?.addEventListener("click", generateQRCode);
     }
-    if (state === STATES.Approved && successURL) {
-      redirectWithDelay(successURL, REDIRECT_DELAY);
+    if (state === STATES.Approved && successRedirectURL) {
+      redirectWithDelay(successRedirectURL, REDIRECT_DELAY);
     }
-    if ((state === STATES.RejectedByUser || state === STATES.RejectedByRequirement) && failURL) {
-      redirectWithDelay(failURL, REDIRECT_DELAY);
+    if ((state === STATES.RejectedByUser || state === STATES.RejectedByRequirement) && failRedirectURL) {
+      redirectWithDelay(failRedirectURL, REDIRECT_DELAY);
     }
-    if (state === STATES.SomethingWentWrong && failURL) {
-      redirectWithDelay(failURL, REDIRECT_DELAY);
+    if (state === STATES.SomethingWentWrong && failRedirectURL) {
+      redirectWithDelay(failRedirectURL, REDIRECT_DELAY);
     }
   }
 

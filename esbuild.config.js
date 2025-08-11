@@ -2,6 +2,7 @@ import { build } from "esbuild";
 
 const ENV = process.env.NODE_ENV || "local";
 const BASE_API_URL = process.env.BASE_API_URL || "http://localhost:8888";
+const baseFileName = ENV === "production" ? "script" : `script.${ENV}`;
 
 const sharedConfig = {
   entryPoints: ["./src/main.ts"],
@@ -16,13 +17,13 @@ const sharedConfig = {
   sourcemap: false,
 };
 
-await build({
-  ...sharedConfig,
-  outfile: `dist/index.${ENV}.js`,
-});
+// await build({
+//   ...sharedConfig,
+//   outfile: `dist/${baseFileName}.js`,
+// });
 
 await build({
   ...sharedConfig,
   minify: true,
-  outfile: `dist/index.${ENV}.min.js`,
+  outfile: `dist/${baseFileName}.min.js`,
 });
