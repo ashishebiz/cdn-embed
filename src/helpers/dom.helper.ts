@@ -16,3 +16,4 @@ export function logData(container: HTMLElement | null, state: VerificationState)
 }
 
 export const redirectWithDelay = (url: string, delay: number) => setTimeout(() => (window.location.href = url), delay);
+ 

@@ -18,7 +18,7 @@ export const QR_CONTAINER_SELECTOR = "#embed-qr-code";
 export const LOG_CONTAINER_SELECTOR = "#embed-qr-code-logs";
 
 export const POLLING_INTERVAL = 5000;
-export const REDIRECT_DELAY = 10000;
+export const REDIRECT_DELAY = 500;
 
 export const STATES = {
   WaitingForScan: "WaitingForScan",

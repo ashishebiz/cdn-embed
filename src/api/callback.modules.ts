@@ -11,6 +11,7 @@ export const callbackModule = (() => {
 
   function setOptions(options: QRModuleOptions) {
     container = document.querySelector(options.qrCodeSelector);
+    console.log('=====>container', container);
     if (!container) return;
     generateQRCode = options.generateQRCodeFunction;
     successRedirectURL = options.successRedirectURL || "";
@@ -20,6 +21,7 @@ export const callbackModule = (() => {
   function handleState(state: VerificationState) {
     if (!container) return;
     const html = getMessageHTML(state);
+    console.log('=====>html', html);
     container.innerHTML = `<div style="
         width: 100%;
         height: 100%;

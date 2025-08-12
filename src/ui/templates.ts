@@ -3,7 +3,7 @@ import { VerificationState } from "../types";
 export const getMessageHTML = (state: VerificationState): string => {
   const messages: Record<VerificationState, string> = {
     Timeout: `
-    <div style="margin-bottom: 10px; color: #fff;">QR expired.</div>
+    <div style="margin-bottom: 10px; color: #fff;">QR Expired.</div>
     <a id='new-qr-button' style="
       margin-top: 10px;
       display: inline-block;
@@ -19,12 +19,12 @@ export const getMessageHTML = (state: VerificationState): string => {
 
     Scanned: `
     <div style="font-size: 30px; margin-bottom: 10px;">⏳</div>
-    <div style="color: #fff;">Scanning in progress...</div>
+    <div style="color: #fff;">Scanning In Progress...</div>
   `,
 
     Approved: `
     <div style="font-size: 30px; margin-bottom: 10px;">✅</div>
-    <div style="color: #00ff99;">Access granted in 10s.</div>
+    <div style="color: #00ff99;">Access Granted</div>
   `,
 
     RejectedByUser: `
@@ -41,7 +41,7 @@ export const getMessageHTML = (state: VerificationState): string => {
 
     SomethingWentWrong: `
     <div style="font-size: 30px; margin-bottom: 10px;">⚠️</div>
-    <div style="color: #ff4444;">Something went wrong</div>
+    <div style="color: #ff4444;">Something Went Wrong</div>
   `,
   };
   return messages[state];
