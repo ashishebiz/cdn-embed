@@ -37,7 +37,7 @@ export const getMessageHTML = (state: VerificationState): string => {
     <div style="color: #ff4444;">Access Denied</div>
   `,
 
-    WaitingForScan: '',
+    WaitingForScan: "",
 
     SomethingWentWrong: `
     <div style="font-size: 30px; margin-bottom: 10px;">⚠️</div>

@@ -20,7 +20,15 @@ export const callbackModule = (() => {
   function handleState(state: VerificationState) {
     if (!container) return;
     const html = getMessageHTML(state);
-    container.innerHTML = `<div class='w-100 h-100 align-content-center'>${html}</div>`;
+    container.innerHTML = `<div style="
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        flex-direction: column;
+        ">${html}</div>`;
 
     if (state === STATES.Timeout && generateQRCode) {
       document.getElementById("new-qr-button")?.addEventListener("click", generateQRCode);
