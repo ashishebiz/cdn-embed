@@ -10,6 +10,7 @@ declare global {
 
 (() => {
   const { apiKey, successRedirectURL, failRedirectURL, notificationURL } = extractQueryParams();
+  console.log("apiKey:", apiKey)
 
   if (!apiKey) return errorLog("Missing 'apiKey' in script tag. Example usage: <script src='...main.js data-api-key=your-api-key'>");
 

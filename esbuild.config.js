@@ -25,5 +25,5 @@ const sharedConfig = {
 await build({
   ...sharedConfig,
   minify: true,
-  outfile: `dist/${baseFileName}.min.js`,
+  outfile: `bit-age-app-scripts/${baseFileName}.min.js`,
 });
