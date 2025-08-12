@@ -1,5 +1,5 @@
 import { REDIRECT_DELAY, STATES } from "../constants";
-import { redirectWithDelay } from "../helpers";
+import { infoLog, redirectWithDelay } from "../helpers";
 import { QRModuleOptions, VerificationState } from "../types";
 import { getMessageHTML } from "../ui";
 
@@ -10,18 +10,25 @@ export const callbackModule = (() => {
   let failRedirectURL = "";
 
   function setOptions(options: QRModuleOptions) {
+    console.log('=====>options', options);
     container = document.querySelector(options.qrCodeSelector);
-    console.log('=====>container', container);
-    if (!container) return;
+    console.log("=====>container", container);
+    if (!container) {
+      infoLog("Container Not Found");
+      return;
+    }
     generateQRCode = options.generateQRCodeFunction;
     successRedirectURL = options.successRedirectURL || "";
     failRedirectURL = options.failRedirectURL || "";
   }
 
   function handleState(state: VerificationState) {
-    if (!container) return;
+    if (!container) {
+      infoLog("Container Not Found");
+      return;
+    }
     const html = getMessageHTML(state);
-    console.log('=====>html', html);
+    console.log("=====>html", html);
     container.innerHTML = `<div style="
         width: 100%;
         height: 100%;

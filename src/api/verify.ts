@@ -83,7 +83,7 @@ export class IdentityVerifier {
       this.clearPolling();
       return;
     }
-
+  console.log('=====>state', state);
     switch (state) {
       case STATES.WaitingForScan:
         return;
