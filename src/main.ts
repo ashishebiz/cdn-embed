@@ -1,6 +1,6 @@
 import { callbackModule, IdentityVerifier } from "./api";
 import { LOG_CONTAINER_SELECTOR, QR_CONTAINER_SELECTOR } from "./constants";
-import { errorLog, extractQueryParams, infoLog } from "./helpers";
+import { errorLog, extractQueryParams } from "./helpers";
 
 declare global {
   interface Window {
@@ -10,7 +10,6 @@ declare global {
 
 (() => {
   const { apiKey, successRedirectURL, failRedirectURL, notificationURL } = extractQueryParams();
-  console.log("apiKey:", apiKey)
 
   if (!apiKey) return errorLog("Missing 'apiKey' in script tag. Example usage: <script src='...main.js data-api-key=your-api-key'>");
 
