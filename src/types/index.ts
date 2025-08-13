@@ -29,3 +29,18 @@ export interface IGeolocation {
   latitude: number;
   longitude: number;
 }
+
+export interface IResponseError {
+  field: string;
+  message: string;
+}
+
+export interface IResponseMessage {
+  status?: number;
+  success?: boolean;
+  metadata?: object;
+  message?: string;
+  errorCode?: string;
+  errors?: IResponseError[];
+  details?: object;
+}

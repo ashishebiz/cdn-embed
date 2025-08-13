@@ -1,5 +1,5 @@
 import { GeolocationNotSupportedMessage, LocationErrorMessage, DEFAULT_HEADERS } from "../constants";
-import { IGeolocation } from "../types";
+import { IGeolocation, IResponseMessage } from "../types";
 import { showErrorMessageHTML } from "../ui";
 
 export const sleep = (seconds: number): Promise<void> => {
@@ -71,8 +71,9 @@ const checkGeolocationPermission = async (): Promise<PermissionState> => {
 export async function getRequest(url: string, headers: Record<string, string> = {}) {
   const res = await fetch(url, { method: "GET", headers });
   if (!res.ok) {
-    const message = (await res.json())?.message;
-    alert("Something Went Wrong");
+    const parsedRes = await res.json();
+    const message = getResponseMessage(parsedRes);
+    alert("Something went wrong with QR verification (My Age App). Please try again later.");
     throw new Error(`${res.status} : ${message}`);
   }
   return res.json();
@@ -88,9 +89,20 @@ export async function postRequest(url: string, body: Record<string, unknown>, he
     body: JSON.stringify(body),
   });
   if (!res.ok) {
-    const message = (await res.json())?.message;
-    alert("Something Went Wrong");
+    const parsedRes = await res.json();
+    const message = getResponseMessage(parsedRes);
+    alert("Something went wrong with QR verification (My Age App). Please try again later.");
     throw new Error(`${res.status} : ${message}`);
   }
   return res.json();
+}
+
+function getResponseMessage(res: IResponseMessage){
+  let message = "Something Went Wrong";
+  if(res?.errors && res?.errors?.length){
+    message = res.errors[0].message;
+  }else if(res.message){
+    message = res.message;
+  }
+  return message;
 }
